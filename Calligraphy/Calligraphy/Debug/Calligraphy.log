@@ -1,30 +1,7 @@
-﻿Build started 2015/12/3 21:52:40.
-     1>Project "D:\Stroke\Calligraphy\Calligraphy\Calligraphy.vcxproj" on node 2 (Build target(s)).
-     1>ClCompile:
-         C:\Program Files\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt Calligraphy.cpp pixel.cpp point.cpp stroke.cpp
-         Calligraphy.cpp
-     1>d:\stroke\calligraphy\calligraphy\calligraphy.cpp(102): warning C4018: '<' : signed/unsigned mismatch
-         Generating Code...
-         Compiling...
-         stroke.cpp
-     1>d:\stroke\calligraphy\calligraphy\stroke.cpp(164): warning C4018: '<' : signed/unsigned mismatch
-         point.cpp
-     1>d:\stroke\calligraphy\calligraphy\point.cpp(28): warning C4018: '<' : signed/unsigned mismatch
-     1>d:\stroke\calligraphy\calligraphy\point.cpp(30): warning C4018: '<' : signed/unsigned mismatch
-     1>d:\stroke\calligraphy\calligraphy\point.cpp(33): warning C4244: 'initializing' : conversion from 'double' to 'int', possible loss of data
-     1>d:\stroke\calligraphy\calligraphy\point.cpp(66): warning C4244: 'initializing' : conversion from 'double' to 'int', possible loss of data
-     1>d:\stroke\calligraphy\calligraphy\point.cpp(77): warning C4018: '<' : signed/unsigned mismatch
-     1>d:\stroke\calligraphy\calligraphy\point.cpp(84): warning C4244: 'initializing' : conversion from 'double' to 'int', possible loss of data
-         pixel.cpp
-         Generating Code...
-       Link:
-         C:\Program Files\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\Stroke\Calligraphy\Debug\Calligraphy.exe" /INCREMENTAL /NOLOGO opencv_core2411d.lib opencv_imgproc2411d.lib opencv_highgui2411d.lib opencv_ml2411d.lib opencv_video2411d.lib opencv_features2d2411d.lib opencv_calib3d2411d.lib opencv_objdetect2411d.lib opencv_contrib2411d.lib opencv_legacy2411d.lib opencv_flann2411d.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:\Stroke\Calligraphy\Debug\Calligraphy.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\Stroke\Calligraphy\Debug\Calligraphy.lib" /MACHINE:X86 Debug\Calligraphy.obj
-         Debug\pixel.obj
-         Debug\point.obj
-         Debug\stroke.obj
-         Calligraphy.vcxproj -> D:\Stroke\Calligraphy\Debug\Calligraphy.exe
-     1>Done Building Project "D:\Stroke\Calligraphy\Calligraphy\Calligraphy.vcxproj" (Build target(s)).
-
-Build succeeded.
-
-Time Elapsed 00:00:06.70
+﻿  stroke.cpp
+  Generating Code...
+d:\stroke\calligraphy\calligraphy\stroke.cpp(376): error C4716: 'IsPie' : must return a value
+d:\stroke\calligraphy\calligraphy\stroke.cpp(388): error C4716: 'IsNa' : must return a value
+  Compiling...
+  Calligraphy.cpp
+  Generating Code...

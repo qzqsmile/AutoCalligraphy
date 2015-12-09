@@ -25,12 +25,12 @@ int CalPointLongLine(const vector<CvPoint>&cv, vector<CvPoint>& store)
 {
 	int max = 0;
 	
-	for(int i = 0; i < cv.size(); i++)
+	for(unsigned int i = 0; i < cv.size(); i++)
 	{
-		for(int j = i; j < cv.size(); j++)
+		for(unsigned int j = i; j < cv.size(); j++)
 		{
 			//这里是否要改用float?
-			int temp = sqrt(pow(abs(cv[i].x-cv[j].x),2)+pow(abs(cv[i].y-cv[j].y),2));
+			int temp = (int)sqrt(pow(abs(cv[i].x-cv[j].x),2)+pow(abs(cv[i].y-cv[j].y),2));
 			if(temp > max)
 			{
 				store.clear();
@@ -63,7 +63,7 @@ int CalPointShortLine(const vector<CvPoint>&cv, vector<CvPoint> & shortstore, in
 			shortvecy = cv[i].y - cv[j].y;
 			if(abs(shortvecx * longvecx + shortvecy * longvecy) < 10)
 			{
-				int temp = sqrt(pow(abs(cv[i].x-cv[j].x),2)+pow(abs(cv[i].y-cv[j].y),2));
+				int temp = (int)sqrt(pow(abs(cv[i].x-cv[j].x),2)+pow(abs(cv[i].y-cv[j].y),2));
 				if(temp > shortlinelength)
 				{
 					shortstore.clear();
@@ -74,14 +74,14 @@ int CalPointShortLine(const vector<CvPoint>&cv, vector<CvPoint> & shortstore, in
 			}
 		}
 
-		for(int j = end + 1; j < cv.size(); j++)
+		for(unsigned int j = end + 1; j < cv.size(); j++)
 		{
 			int shortvecx = 0, shortvecy = 0;
 			shortvecx= cv[i].x - cv[j].x;
 			shortvecy = cv[i].y - cv[j].y;
 			if(abs(shortvecx * longvecx + shortvecy * longvecy) < 10)
 			{
-				int temp = sqrt(pow(abs(cv[i].x-cv[j].x),2)+pow(abs(cv[i].y-cv[j].y),2));
+				int temp = (int)sqrt(pow(abs(cv[i].x-cv[j].x),2)+pow(abs(cv[i].y-cv[j].y),2));
 				if(temp > shortlinelength)
 				{
 					shortstore.clear();

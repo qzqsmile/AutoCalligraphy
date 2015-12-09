@@ -89,6 +89,7 @@
   <ItemGroup>
     <ClInclude Include="pixel.h" />
     <ClInclude Include="point.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="stroke.h" />
     <ClInclude Include="word.h" />
   </ItemGroup>

@@ -63,7 +63,7 @@ int main( int argc, char** argv )
 	IplImage *pOutlineImage = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
 	int nlevels = 3;
 	cvRectangle(pOutlineImage, cvPoint(0, 0), cvPoint(pOutlineImage->width, pOutlineImage->height), CV_RGB(255, 255, 255), CV_FILLED);  
-	cvDrawContours(pOutlineImage, pcvSeq, CV_RGB(255,0,0), CV_RGB(0,255,0), nlevels, 2);
+	cvDrawContours(pOutlineImage, pcvSeq, CV_RGB(255,0,0), CV_RGB(0,255,0), nlevels, 1);
 	
 	//获取轮廓的像素坐标
 	CvPoint *pPoint = NULL;
@@ -99,7 +99,7 @@ int main( int argc, char** argv )
 				int begin, end;
 				begin = end = 0 ;
 
-				for(int i = 0; i < pointstroke.size(); i++)
+				for(unsigned int i = 0; i < pointstroke.size(); i++)
 				{
 					if((pointstroke[i].x == longlengthpoint[0].x) && (pointstroke[i].y == longlengthpoint[0].y))
 						begin = i;
@@ -126,19 +126,47 @@ int main( int argc, char** argv )
 					pPoint = (CvPoint *)cvGetSeqElem(pcvSeq, i);
 					strokepoint.push_back(*pPoint);
 				}
+				/*CvPoint x;
+				x = strokepoint[0];
+				for(unsigned int i = 0; i < 50; i++)
+				{
+					x.x++;
+					SetPixel(bin_img, &x);
+				}*/
+				//SetPixel(bin_img, &x);
+				//cvLine(bin_img,x,y,CV_RGB(0,0,0),1,0);
+				//SetPixel(pOutlineImage, &x);
+
 				//if(count == 3)
 					//cvLine(pOutlineImage,strokepoint[0],strokepoint[50],CV_RGB(0,0,255),1,0);
-				if(IsHeng(strokepoint, bin_img))
+   				if(IsHeng(strokepoint, bin_img))
 				{
+					cout <<"is heng"<<endl;
 					DrawHengMiddle(strokepoint,bin_img,pOutlineImage,hengstroke);
-					//cout << count << endl;
-					//cout << "is heng" << endl;
 				}
 
-/*				if(Isshu(strokepoint, bin_img))
+				if(Isshu(strokepoint, bin_img))
 				{
-
-				}*/
+					vector<CvPoint>shustroke;
+					//DrawOutLine(strokepoint, img);
+					DrawShuMiddle(strokepoint,bin_img,pOutlineImage,shustroke);
+					cout <<"is shu" <<endl;
+					/*vector<CvPoint> st;
+					CvPoint x;
+					x.x = 132;
+					x.y = 124;
+					st.push_back(x);
+					x.x = 233;
+					x.y = 124;
+					st.push_back(x);
+					x.x = 132;
+					x.y = 353;
+					st.push_back(x);
+					x.x = 233;
+					x.y = 353;
+					st.push_back(x);
+					DrawOutLine(st, img);*/
+				}
 
 			}
 			printf("count = %d\n", count);
