@@ -18,7 +18,7 @@ void DrawHengMiddle(vector<CvPoint> &stroke,const IplImage *img, IplImage * outi
 
 int main( int argc, char** argv )  
 {     
-	const char* imagename = "C:\\Users\\Q\\Desktop\\黑白.jpg";
+	const char* imagename = "..\\Res\\点.jpg";
  
     //从文件中读入图像
 	IplImage *img = cvLoadImage(imagename,CV_LOAD_IMAGE_UNCHANGED);
@@ -75,8 +75,11 @@ int main( int argc, char** argv )
 		//取轮廓中一个点
 		pPoint = (CvPoint *)cvGetSeqElem(pcvSeq, 0);
 
+		
 		if((pPoint->x >= 5) && (pPoint->y >= 5) && (pPoint->x < ((bin_img->width)-10)) && (pPoint->y < ((bin_img->height)-10)))
 		{
+			//if(pcvSeq->total < 10)
+			//	continue;
 			if(IsPoint(pcvSeq))
 			{
 				//printf("this is a Point! count = %d\n", count);
@@ -92,12 +95,13 @@ int main( int argc, char** argv )
 					pPoint = (CvPoint *)cvGetSeqElem(pcvSeq, i);
 					pointstroke.push_back(*pPoint);
 				}
+				//DrawLine(pointstroke[0],pOutlineImage);
 				maxlength = CalPointLongLine(pointstroke, longlengthpoint);
-				cvLine(pOutlineImage,longlengthpoint[0],longlengthpoint[1],CV_RGB(0,0,255),1,0);
+				//cvLine(pOutlineImage,longlengthpoint[0],longlengthpoint[1],CV_RGB(0,0,255),1,0);
 
 				//确定开始点与结束点
 				int begin, end;
-				begin = end = 0 ;
+				begin = end = 0;
 
 				for(unsigned int i = 0; i < pointstroke.size(); i++)
 				{
@@ -106,6 +110,9 @@ int main( int argc, char** argv )
 					if((pointstroke[i].x == longlengthpoint[1].x) && (pointstroke[i].y == longlengthpoint[1].y))
 						end = i;
 				}
+				//计算线段的中位点
+				end = begin + pointstroke.size() / 2 - 3;
+				cvLine(pOutlineImage,pointstroke[begin],pointstroke[end],CV_RGB(0,0,255),1,0);
 				if(begin > end)
 					swap(begin, end);
 				//计算雨滴短边
@@ -121,11 +128,14 @@ int main( int argc, char** argv )
 			{
 				vector<CvPoint> strokepoint;
 				vector<CvPoint> hengstroke;
+				vector<CvPoint> piestroke;
+				vector<CvPoint> nastroke;
 				for(int i = 0; i < pcvSeq->total; i++)
 				{
 					pPoint = (CvPoint *)cvGetSeqElem(pcvSeq, i);
 					strokepoint.push_back(*pPoint);
 				}
+				//DrawLine(strokepoint[0], pOutlineImage);
 				/*CvPoint x;
 				x = strokepoint[0];
 				for(unsigned int i = 0; i < 50; i++)
@@ -139,35 +149,43 @@ int main( int argc, char** argv )
 
 				//if(count == 3)
 					//cvLine(pOutlineImage,strokepoint[0],strokepoint[50],CV_RGB(0,0,255),1,0);
+
    				if(IsHeng(strokepoint, bin_img))
 				{
 					cout <<"is heng"<<endl;
 					DrawHengMiddle(strokepoint,bin_img,pOutlineImage,hengstroke);
 				}
 
-				if(Isshu(strokepoint, bin_img))
+				if(IsShu(strokepoint, bin_img))
 				{
 					vector<CvPoint>shustroke;
 					//DrawOutLine(strokepoint, img);
 					DrawShuMiddle(strokepoint,bin_img,pOutlineImage,shustroke);
 					cout <<"is shu" <<endl;
-					/*vector<CvPoint> st;
-					CvPoint x;
-					x.x = 132;
-					x.y = 124;
-					st.push_back(x);
-					x.x = 233;
-					x.y = 124;
-					st.push_back(x);
-					x.x = 132;
-					x.y = 353;
-					st.push_back(x);
-					x.x = 233;
-					x.y = 353;
-					st.push_back(x);
-					DrawOutLine(st, img);*/
 				}
 
+				////if(count == 1)
+				////	DrawOutLine(strokepoint, img);
+
+				float ang = 0;
+				if(IsPie(strokepoint, bin_img, &ang))
+				{
+					cout << "is pie" << endl;
+					DrawPieMiddle(strokepoint, bin_img, pOutlineImage,piestroke, ang);
+				}
+
+				if(IsNa(strokepoint, bin_img))
+				{
+					cout << "Is Na" << endl;
+					DrawNaMiddle(strokepoint, bin_img, pOutlineImage, nastroke);
+				}
+
+				//if(strokepoint.size() == 28)
+					//DrawOutLine(strokepoint, pOutlineImage);
+				//if(IsGou(strokepoint, bin_img))
+				//{
+				//	cout << "Is Gou" << endl;
+				//}
 			}
 			printf("count = %d\n", count);
 		}

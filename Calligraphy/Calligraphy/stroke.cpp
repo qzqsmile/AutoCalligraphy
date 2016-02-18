@@ -5,10 +5,15 @@
 using namespace cv;
 using namespace std;  
 
-
+enum{
+	PIE_COUNT = 8 
+};
+enum{
+	NA_COUNT = 5
+};
 /*
-	for debug
-	vector中的点通过线连接起来
+for debug
+vector中的点通过线连接起来
 */
 void DrawOutLine(vector<CvPoint>&stroke, IplImage * img)
 {
@@ -25,7 +30,16 @@ void DrawOutLine(vector<CvPoint>&stroke, IplImage * img)
 		pre = next;
 	}
 }
+/*
+确定是哪一个点
+*/
 
+void DrawLine(CvPoint&s, IplImage *out_img)
+{
+	CvPoint s1 = s;
+	s1.y = out_img->height;
+	cvLine(out_img, s, s1, CV_RGB(0,199,155),2,0);
+}
 /**判断它是不是个横线
 */
 bool IsHeng(const vector<CvPoint>& strokepoint, const IplImage * img)
@@ -34,7 +48,7 @@ bool IsHeng(const vector<CvPoint>& strokepoint, const IplImage * img)
 	testpoint.y += 10;
 	int res;// = GetPixel(img, &testpoint);
 	res = GetPixel(img, &strokepoint[0]);
-	
+
 	if(GetPixel(img, &testpoint))
 	{
 		testpoint.y = strokepoint[0].y-5;
@@ -62,13 +76,15 @@ bool IsHeng(const vector<CvPoint>& strokepoint, const IplImage * img)
 /*
 确定是不是竖线
 */
-bool Isshu(const vector<CvPoint>& stroke, const IplImage *img)
+bool IsShu(const vector<CvPoint>& stroke, const IplImage *img)
 {
-	if(stroke.size() < 4)
+	//version1
+	/*if(stroke.size() < 4)
 	{
 		cout << "point number is less than 4" << endl;
+		return false;
 	}
-	CvPoint testpoint = stroke[4];
+	CvPoint testpoint = stroke[3];
 	testpoint.x += 5;
 	if(GetPixel(img, &testpoint))
 		testpoint.x -= 10;
@@ -87,6 +103,31 @@ bool Isshu(const vector<CvPoint>& stroke, const IplImage *img)
 
 	if(pixelcount > 100)
 		return true;
+	return false;*/
+
+	//version2
+	CvPoint pre;
+	int count = 0;
+	//从index下标处开始计算，用以排除干扰
+	int xindex = stroke[2].x;
+	for(unsigned int i = 0; i < stroke.size(); i++)
+	{
+		if(i == 0)
+		{
+			pre = stroke[i];
+			continue;
+		}
+		if(i > 15)
+			return false;
+		if(count >= 8)
+			return true;
+		//x, y是否符合相应的位置关系
+		if(((stroke[i].x <= (xindex+2)) && (stroke[i].x >= (xindex-2))) && (stroke[i].y >= pre.y))
+		{
+			count++;
+		}
+		pre = stroke[i];
+	}
 	return false;
 }
 
@@ -98,6 +139,7 @@ void DrawShuMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 	if(stroke.size() < 4)
 	{
 		cout << "point number is less than 4" << endl;
+		return ;
 	}
 	CvPoint testpoint = stroke[3];
 	testpoint.x += 5;
@@ -105,7 +147,7 @@ void DrawShuMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 	{
 		testpoint.x -= 10;
 	}
-	
+
 	CvPoint testup, testdown;
 	testup = testdown = testpoint;
 	int up = 0, down = INT_MAX;
@@ -132,7 +174,7 @@ void DrawShuMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 	int maxleft= INT_MAX, maxright = 0;
 
 	CvPoint predrawpoint, nextdrawpoint;
-	
+
 	predrawpoint.y = 10000;
 	vector<int> shuwidth;
 	int midwidth = 0;
@@ -177,7 +219,7 @@ void DrawShuMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 		int left = 0, right = 0;
 		CvPoint testleft, testright;
 		testleft.y = testright.y = i;
-		
+
 		//确定左边
 		for(int j = testpoint.x; j > 0; j--)
 		{
@@ -187,8 +229,8 @@ void DrawShuMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 				left = j;
 				/*if(j < (testpoint.x-10))
 				{
-					//up = maxup;
-					break;
+				//up = maxup;
+				break;
 				}*/
 				if(maxleft > left)
 					maxleft = left;
@@ -204,7 +246,7 @@ void DrawShuMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 				right = j;
 				/*if(j > (predrawpoint.y+50))
 				{
-					break ;
+				break ;
 				}*/
 				if(maxright < right)
 					maxright = right;
@@ -212,7 +254,7 @@ void DrawShuMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 			}
 		}
 		//ave = (up+down) / 2;
-	    
+
 		nextdrawpoint.x = (left + right) / 2;
 		if((left+right / 2) > (midwidth+20))
 			nextdrawpoint.x = midwidth;
@@ -223,12 +265,12 @@ void DrawShuMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 			predrawpoint = nextdrawpoint;
 			continue;
 		}
-	/*	if((nextdrawpoint.y - predrawpoint.y) > 5)
+		/*	if((nextdrawpoint.y - predrawpoint.y) > 5)
 		{
-			//right = predrawpoint.x;
-			//break;
-			nextdrawpoint.x = i;
-			nextdrawpoint.y = predrawpoint.y;
+		//right = predrawpoint.x;
+		//break;
+		nextdrawpoint.x = i;
+		nextdrawpoint.y = predrawpoint.y;
 		}*/
 		cvLine(outimg,predrawpoint,nextdrawpoint,CV_RGB(0,0,255),1,0);
 		predrawpoint = nextdrawpoint;
@@ -239,12 +281,16 @@ void DrawShuMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 	for(unsigned int i = 0; i < stroke.size(); i++)
 	{
 		CvPoint point = stroke[i];
-		if(((maxleft) < point.x)&&(maxright > point.x)&&
+		if(((2 * midwidth-maxright) < point.x)&&(maxright > point.x)&&
 			(down > point.y)&&(up < point.y))
 			shustroke.push_back(point);
 		else
 			noshu.push_back(point);
 	}
+	CvPoint x;
+	x.x = 2 *midwidth - maxright;
+	x.y = 1;
+	//DrawLine(x,outimg);
 	stroke.clear();
 	stroke = noshu;
 }
@@ -256,7 +302,7 @@ void DrawHengMiddle(vector<CvPoint> &stroke, const IplImage *img, IplImage *Outi
 {
 	CvPoint testpoint = stroke[0];
 	testpoint.y += 15;
-	
+
 	if(GetPixel(img, &testpoint))
 	{
 		testpoint.y -= 5;
@@ -267,7 +313,7 @@ void DrawHengMiddle(vector<CvPoint> &stroke, const IplImage *img, IplImage *Outi
 	CvPoint testleft, testright;
 	testleft.x = testright.x = testpoint.x;
 	testleft.y = testright.y = testpoint.y;
-	
+
 	for(int i = testpoint.x; i > 0; i--)
 	{
 		testleft.x = i;
@@ -370,28 +416,546 @@ void DrawHengMiddle(vector<CvPoint> &stroke, const IplImage *img, IplImage *Outi
 /*
 是不是撇,是撇的话返回true；否则返回false
 */
-bool IsPie(const vector<CvPoint>& stroke, const IplImage *img)
+bool IsPie(const vector<CvPoint>& stroke, const IplImage *img, float * ang)
 {
-	;
-}
+	if(stroke.size() < 40)
+	{
+		cout << "pie Stroke point is too less" << endl;
+		return false;
+	}
+	vector<float> angle;
 
-void DrawPieMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg, vector<CvPoint>& shustroke)
+	for(int i = 0; i < 20; i++)
+	{
+		float x = 0;
+		//防止除0
+		if(stroke[i].x == stroke[i+20].x)
+			continue;
+		x = (float)(stroke[i+20].y - stroke[i].y) / (stroke[i+20].x - stroke[i].x);
+		x = fabs(x);
+		angle.push_back(x);
+	}
+
+	sort(angle.begin(), angle.end());
+	float midangle = angle[angle.size()/2];
+	*ang = midangle;
+	//如果角度在某个范围内的话，就认为其是撇
+	if((0.5 < midangle) && (midangle < 3.0))
+		return true;
+	return false;
+}
+/*
+画出撇的中位线
+*/
+void DrawPieMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg, vector<CvPoint>& piestroke, float ang)
 {
-	;
+	//确定up
+	
+	//version 3 利用中位线的角度来判断
+	/*bool is_left_true = true;
+	int count = 0;
+	CvPoint testpoint = stroke[0];
+	CvPoint prepoint, nextpoint;
+	CvPoint testpoint1, testpoint2;
+
+	testpoint1 = testpoint2 = testpoint;
+	testpoint.x = testpoint.x - 3;
+
+	if(IsWhite(img, &testpoint))
+	{
+		is_left_true = false;
+	}
+
+	for(auto i = testpoint.y; i < outimg->height; i++)
+	{
+		if(is_left_true)
+		{
+			testpoint1.y = i;
+			count++;
+			if(count >= 2)
+			{
+				count = 0;
+				testpoint1.x--;
+			}
+			for(auto j = testpoint1.x; j > 0; j--){
+				if(!IsWhite(img, &testpoint1))
+				{
+					testpoint2 = testpoint1;
+					for(auto k = testpoint1.x; k >= 0; k--)
+					{
+						if(IsWhite(img, &testpoint2)){
+							break;
+						}
+						testpoint2.x--;
+					}
+					break;
+				}
+				testpoint1.x--;
+			}
+			nextpoint.x = (testpoint1.x + testpoint2.x) / 2;
+			nextpoint.y = (testpoint1.y + testpoint2.y) / 2;
+			
+
+		}
+		else
+		{
+			//for(auto j; ;j--){
+			//}
+		}
+	}*/
+
+	//verison1 通过轮廓的轨迹来判断
+	CvPoint testup, testdown, pre;
+	
+	int count = 0, down_index = 0, begin = 0;
+
+	testup = stroke[0];
+	pre = stroke[0];
+	//确定开始begin
+
+	for(unsigned int i = 0; i < stroke.size(); i++)
+	{
+		if((stroke[i].x <= pre.x) && (stroke[i].y >= pre.y))
+		{
+			pre = stroke[i];
+			count ++;
+		}
+		pre = stroke[i];
+		if(count >= 2)
+		{
+			begin = i;
+			break;
+		}
+		
+	}
+
+	count = 0;
+	testup = pre = stroke[begin];
+	//确定down
+	for(unsigned int i = begin; i < stroke.size(); i++)
+	{
+		if((stroke[i].x <= pre.x) && (stroke[i].y >= pre.y))
+		{
+			pre = stroke[i];
+		}
+		else
+		{
+			count++;
+			pre = stroke[i];
+			//确定up点
+			if(count > PIE_COUNT)
+			{
+				testdown = pre;
+				down_index = i;
+				break;
+			}
+		}
+	}
+
+	//DrawLine(testdown, outimg);
+	//确定撇的方向
+	bool is_left_true = true;
+	CvPoint test = stroke[3];
+	test.x = test.x - 3;
+	if(IsWhite(img, &test))
+	{
+		is_left_true = false;
+	}
+
+	CvPoint predrawpoint, nextdrawpoint;
+	predrawpoint.x = -1;
+
+	for(int i = begin; i < down_index; i++)
+	{
+		nextdrawpoint.y = stroke[i].y;
+		if(is_left_true)
+		{
+			for(int j = stroke[i].x-3; j > 0; j--)
+			{
+				nextdrawpoint.x = j;
+				if(IsWhite(img, &nextdrawpoint))
+				{
+					nextdrawpoint.x = (j + stroke[i].x) / 2;
+					if(predrawpoint.x == -1)
+					{
+						predrawpoint = nextdrawpoint;
+					}
+					break;
+				}
+			}
+		}
+		else
+		{
+			for(int j = stroke[i].x+1; j < img->widthStep; j++)
+			{
+				nextdrawpoint.x = j;
+				if(IsWhite(img, &nextdrawpoint))
+				{
+					nextdrawpoint.x = (j + stroke[i].x) / 2;
+					if(predrawpoint.x == -1)
+					{
+						predrawpoint = nextdrawpoint;
+					}
+					break;
+				}
+			}
+		}
+
+		cvLine(outimg, predrawpoint, nextdrawpoint,CV_RGB(0,0,255),1,0);
+		predrawpoint = nextdrawpoint;
+	}
+	//去掉相应的点
+
+	vector<CvPoint> nopie;
+	for(unsigned int i = 0; i < stroke.size(); i++)
+	{
+		CvPoint point = stroke[i];
+		if((point.y >= stroke[0].y)  && (point.y <= stroke[down_index-1].y))
+			piestroke.push_back(point);
+		else
+			nopie.push_back(point);
+	}
+	stroke.clear();
+	stroke = nopie;
+
+	//version 2 根据角度来，与其它方法相似，效果较差
+	//if(stroke.size() < 4)
+	//{
+	//	cout << "stroke point number is less than 4" << endl;
+	//}
+	//CvPoint testpoint = stroke[3];
+	//CvPoint testpoint1 = testpoint;
+	//
+	////DrawLine(testpoint,outimg);
+	//testpoint.x += 5;
+	//if(IsWhite(img, &testpoint))
+	//{
+	//	testpoint.x -= 10;
+	//}
+	//
+	//CvPoint testup, testdown;
+	//testup = testdown = testpoint;
+	//int up = 0, down = INT_MAX;
+	//up = down = 0;
+	////确定上下边
+	//int ang_int = (int) ang;
+	//for(int i = testpoint.y; i >= 0; i--)
+	//{
+	//	testup.y = i;
+	//	testup.x = testup.x + ang_int;
+	//	if(!IsWhite(img, &testup))
+	//		up = i;
+	//	else
+	//		break;
+	//}
+	//DrawLine(testup, outimg);
+
+	//for(int i = testpoint.y; i < (img->height); i++)
+	//{
+	//	testdown.y = i;
+	//	testdown.x = testdown.x - ang_int+3;
+	//	if(!IsWhite(img, &testdown))
+	//		down = i;
+	//	else
+	//		break;
+	//}
+	//DrawLine(testdown, outimg);
+	//int maxleft= INT_MAX, maxright = 0;
+
+	//CvPoint predrawpoint, nextdrawpoint;
+	//
+	//predrawpoint.y = 10000;
+	//vector<int> piewidth;
+	//int midwidth = 0;
+	////寻找中位数
+	///*
+	//for(int i = up; i <= down; i++)
+	//{
+	//	int left = 0, right = 0;
+	//	CvPoint testleft, testright;
+	//	testleft.y = testright.y = i;
+
+	//	//确定左边
+	//	for(int j = testpoint.x; j > 0; j--)
+	//	{
+	//		testleft.x = j;
+	//		if(IsWhite(img, &testleft))
+	//		{
+	//			left = j;
+	//			break;
+	//		}
+	//	}
+
+	//	//确定右边
+	//	for(int j = testpoint.x; j < (img->widthStep); j++)
+	//	{
+	//		testright.x = j;
+	//		if(IsWhite(img, &testright))
+	//		{
+	//			right = j;
+	//			break;
+	//		}
+	//	}
+
+	//	piewidth.push_back((right+left)/2);
+	//}
+	////排序，并记录中位线的左边，用以下边排除错误
+	//sort(piewidth.begin(), piewidth.end());
+	//midwidth = piewidth[piewidth.size()/2];*/
+
+	////开始画线
+	//for(int i = up; i <= down; i++)
+	//{
+	//	int left = 0, right = 0;
+	//	CvPoint testleft, testright;
+	//	testleft.y = testright.y = i;
+	//	
+	//	//确定左边
+	//	for(int j = testpoint.x; j > 0; j--)
+	//	{
+	//		testleft.x = j;
+	//		if(IsWhite(img, &testleft))
+	//		{
+	//			left = j;
+	//			/*if(j < (testpoint.x-10))
+	//			{
+	//				//up = maxup;
+	//				break;
+	//			}*/
+	//			if(maxleft > left)
+	//				maxleft = left;
+	//			break;
+	//		}
+	//	}
+	//	//确定右边
+	//	for(int j = testpoint.x; j < (img->widthStep); j++)
+	//	{
+	//		testright.x = j;
+	//		if(IsWhite(img, &testright))
+	//		{
+	//			right = j;
+	//			/*if(j > (predrawpoint.y+50))
+	//			{
+	//				break ;
+	//			}*/
+	//			if(maxright < right)
+	//				maxright = right;
+	//			break;
+	//		}
+	//	}
+	//	//ave = (up+down) / 2;
+	//    
+	//	nextdrawpoint.x = (left + right) / 2;
+	//	//if((left+right / 2) > (midwidth+20))
+	//	//	nextdrawpoint.x = midwidth;
+	//	nextdrawpoint.y = i;
+	//	//第一次不画线，先确定第一个起始点
+	//	if(predrawpoint.y == 10000)
+	//	{
+	//		predrawpoint = nextdrawpoint;
+	//		continue;
+	//	}
+	///*	if((nextdrawpoint.y - predrawpoint.y) > 5)
+	//	{
+	//		//right = predrawpoint.x;
+	//		//break;
+	//		nextdrawpoint.x = i;
+	//		nextdrawpoint.y = predrawpoint.y;
+	//	}*/
+	//	cvLine(outimg,predrawpoint,nextdrawpoint,CV_RGB(0,0,255),1,0);
+	//	predrawpoint = nextdrawpoint;
+	//}
+
+	///*删除撇的点,有点问题
+	//vector<CvPoint> noshu;
+	//for(unsigned int i = 0; i < stroke.size(); i++)
+	//{
+	//	CvPoint point = stroke[i];
+	//	if(((maxleft) < point.x)&&(maxright > point.x)&&
+	//		(down > point.y)&&(up < point.y))
+	//		shustroke.push_back(point);
+	//	else
+	//		noshu.push_back(point);
+	//}
+	//stroke.clear();
+	//stroke = noshu;*/
 }
 /*
 是不是捺
 */ 
 bool IsNa(const vector<CvPoint>&stroke, const IplImage *img)
 {
-	;
-}
-
-void DrawNaMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg, vector<CvPoint>& shustroke)
-{
-	;
+	CvPoint pre;
+	int count = 0;
+	for(unsigned int i = 0; i < stroke.size(); i++)
+	{
+		if(i == 0)
+		{
+			pre = stroke[i];
+			continue;
+		}
+		if(i > 10)
+			return false;
+		if(count >= 5)
+			return true;
+		if((stroke[i].x >= pre.x) && (stroke[i].y >= pre.y))
+		{
+			count++;
+		}
+		pre = stroke[i];
+	}
+	return false;
 }
 
 /*
-
+ 画捺的中位线
 */
+void DrawNaMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg, vector<CvPoint>& nastroke)
+{
+	CvPoint testup, testdown, pre;
+	
+	int count = 0, down_index = 0, begin = 0;
+
+	testup = stroke[0];
+	pre = stroke[0];
+	//确定开始begin
+
+	for(unsigned int i = 0; i < stroke.size(); i++)
+	{
+		if((stroke[i].x >= pre.x) && (stroke[i].y >= pre.y))
+		{
+			pre = stroke[i];
+			count ++;
+		}
+		pre = stroke[i];
+		if(count >= 3)
+		{
+			begin = i;
+			break;
+		}
+		
+	}
+
+	count = 0;
+	testup = pre = stroke[begin];
+	//确定down
+	for(unsigned int i = begin; i < stroke.size(); i++)
+	{
+		if((stroke[i].x >= pre.x) && (stroke[i].y >= pre.y))
+		{
+			pre = stroke[i];
+		}
+		else
+		{
+			count++;
+			pre = stroke[i];
+			//确定up点
+			if(count > NA_COUNT)
+			{
+				testdown = pre;
+				down_index = i;
+				break;
+			}
+		}
+	}
+
+	//DrawLine(testdown, outimg);
+	//确定撇的方向
+	bool is_left_true = true;
+	CvPoint test = stroke[3];
+	test.x = test.x - 3;
+	if(IsWhite(img, &test))
+	{
+		is_left_true = false;
+	}
+
+	CvPoint predrawpoint, nextdrawpoint;
+	vector<CvPoint> d;
+	predrawpoint.x = -1;
+
+	for(int i = begin; i < down_index; i++)
+	{
+		nextdrawpoint.y = stroke[i].y;
+		if(is_left_true)
+		{
+			for(int j = stroke[i].x-8; j > 0; j--)
+			{
+				nextdrawpoint.x = j;
+				if(IsWhite(img, &nextdrawpoint))
+				{
+					nextdrawpoint.x = (j + stroke[i].x) / 2;
+					if(predrawpoint.x == -1)
+					{
+						predrawpoint = nextdrawpoint;
+					}
+					break;
+				}
+			}
+		}
+		else
+		{
+			for(int j = stroke[i].x+1; j < img->widthStep; j++)
+			{
+				nextdrawpoint.x = j;
+				if(IsWhite(img, &nextdrawpoint))
+				{
+					nextdrawpoint.x = (j + stroke[i].x) / 2;
+					if(predrawpoint.x == -1)
+					{
+						predrawpoint = nextdrawpoint;
+					}
+					break;
+				}
+			}
+		}
+
+		d.push_back(predrawpoint);
+		cvLine(outimg,predrawpoint,nextdrawpoint,CV_RGB(0,0,255),1,0);
+		predrawpoint = nextdrawpoint;
+	}
+	//去掉相应的点
+
+	vector<CvPoint> nona;
+	for(unsigned int i = 0; i < stroke.size(); i++)
+	{
+		CvPoint point = stroke[i];
+		if((point.y >= stroke[0].y)  && (point.y <= stroke[down_index-1].y))
+			nastroke.push_back(point);
+		else
+			nona.push_back(point);
+	}
+	stroke.clear();
+	stroke = nona;
+}
+
+/*
+判断其是不是个钩
+*/
+bool IsGou(const vector<CvPoint>&stroke, const IplImage* img)
+{
+	if(stroke.size() > 30)
+		return false;
+	else
+	{
+		CvPoint pre;
+		int count = 0;
+		for(unsigned int i = 0; i < stroke.size(); i++)
+		{
+			if(i == 0)
+			{
+				pre = stroke[i];
+				continue;
+			}
+			if(i > 10)
+				return false;
+			if(count >= 5)
+				return true;
+			if((stroke[i].x <= pre.x) && (stroke[i].y <= pre.y))
+			{
+				count++;
+			}
+			pre = stroke[i];
+		}
+		return false;
+	}
+}

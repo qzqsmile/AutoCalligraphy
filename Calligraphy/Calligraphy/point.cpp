@@ -11,6 +11,7 @@ using namespace std;
 bool IsPoint(const CvSeq *pstroke)
 {
 	if((pstroke->total > 10) && (pstroke->total < 100))
+	//if(pstroke->total < 100)
 		return true;
 	return false;
 }

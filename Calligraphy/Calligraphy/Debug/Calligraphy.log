@@ -1,7 +1,2 @@
-﻿  stroke.cpp
-  Generating Code...
-d:\stroke\calligraphy\calligraphy\stroke.cpp(376): error C4716: 'IsPie' : must return a value
-d:\stroke\calligraphy\calligraphy\stroke.cpp(388): error C4716: 'IsNa' : must return a value
-  Compiling...
-  Calligraphy.cpp
-  Generating Code...
+﻿  Calligraphy.cpp
+  Calligraphy.vcxproj -> D:\Stroke\Calligraphy\Debug\Calligraphy.exe
