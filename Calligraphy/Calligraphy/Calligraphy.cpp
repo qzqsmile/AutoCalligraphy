@@ -18,9 +18,9 @@ void DrawHengMiddle(vector<CvPoint> &stroke,const IplImage *img, IplImage * outi
 
 int main( int argc, char** argv )  
 {     
-	const char* imagename = "..\\Res\\点.jpg";
- 
-    //从文件中读入图像
+	const char* imagename = "..\\Res\\5.jpg";
+
+	//从文件中读入图像
 	IplImage *img = cvLoadImage(imagename,CV_LOAD_IMAGE_UNCHANGED);
 	IplImage *gray_img = cvCreateImage(cvGetSize(img),IPL_DEPTH_8U, 1);
 	cvCvtColor(img, gray_img, CV_BGR2GRAY);
@@ -29,30 +29,30 @@ int main( int argc, char** argv )
 	cvThreshold(gray_img, bin_img, 100, 255, CV_THRESH_BINARY);
 	//复制一份留作轮廓处理
 	IplImage *bin_copy_image = cvCloneImage(bin_img);
- 
+
 	/*CvScalar cs;                            //声明像素变量  
 	for(int i = 0; i < img->height; i++)  
-		for (int j = 0; j < img->width; j++)  
-		{  
-			cs = cvGet2D(img, i, j);   //获取像素  
-			cs.val[0] = 255;             //对指定像素的RGB值进行重新设定  
-			//cs.val[1] = 255;  
-			//cs.val[2] = 255;  
-			cvSet2D(img, i, j, cs);    //将改变的像素保存到图片中  
-		}*/
+	for (int j = 0; j < img->width; j++)  
+	{  
+	cs = cvGet2D(img, i, j);   //获取像素  
+	cs.val[0] = 255;             //对指定像素的RGB值进行重新设定  
+	//cs.val[1] = 255;  
+	//cs.val[2] = 255;  
+	cvSet2D(img, i, j, cs);    //将改变的像素保存到图片中  
+	}*/
 	/*int width = bin_img->width;
 	int height = bin_img->height;
 
 	//读取像素值
 	/*for(size_t row=0; row < height; row++)
 	{
-		uchar *ptr = (uchar *)bin_img->imageData+row*bin_img->widthStep;
-		for(size_t col = 0; col < width; col++)
-		{
-			int intensity = ptr[col];
-			cout << intensity << " ";
-		}
-		cout << endl;
+	uchar *ptr = (uchar *)bin_img->imageData+row*bin_img->widthStep;
+	for(size_t col = 0; col < width; col++)
+	{
+	int intensity = ptr[col];
+	cout << intensity << " ";
+	}
+	cout << endl;
 	}*/
 	//检测轮廓并返回轮廓个数
 	CvMemStorage *pcvMstorage = cvCreateMemStorage();
@@ -64,7 +64,7 @@ int main( int argc, char** argv )
 	int nlevels = 3;
 	cvRectangle(pOutlineImage, cvPoint(0, 0), cvPoint(pOutlineImage->width, pOutlineImage->height), CV_RGB(255, 255, 255), CV_FILLED);  
 	cvDrawContours(pOutlineImage, pcvSeq, CV_RGB(255,0,0), CV_RGB(0,255,0), nlevels, 1);
-	
+
 	//获取轮廓的像素坐标
 	CvPoint *pPoint = NULL;
 	int count = 0;
@@ -75,7 +75,7 @@ int main( int argc, char** argv )
 		//取轮廓中一个点
 		pPoint = (CvPoint *)cvGetSeqElem(pcvSeq, 0);
 
-		
+		//该判断是为了确定轮廓在图像的范围内
 		if((pPoint->x >= 5) && (pPoint->y >= 5) && (pPoint->x < ((bin_img->width)-10)) && (pPoint->y < ((bin_img->height)-10)))
 		{
 			//if(pcvSeq->total < 10)
@@ -110,8 +110,10 @@ int main( int argc, char** argv )
 					if((pointstroke[i].x == longlengthpoint[1].x) && (pointstroke[i].y == longlengthpoint[1].y))
 						end = i;
 				}
-				//计算线段的中位点
-				end = begin + pointstroke.size() / 2 - 3;
+				//计算线段的中位点,这里要注意调整相应的参数
+				//end = begin + pointstroke.size() / 2 - 3;
+				//begin =  (end + pointstroke.size()) / 2;
+				begin = begin - 2;
 				cvLine(pOutlineImage,pointstroke[begin],pointstroke[end],CV_RGB(0,0,255),1,0);
 				if(begin > end)
 					swap(begin, end);
@@ -119,7 +121,7 @@ int main( int argc, char** argv )
 				int longvecx, longvecy;
 				longvecx = longlengthpoint[0].x - longlengthpoint[1].x;
 				longvecy = longlengthpoint[0].y - longlengthpoint[1].y;
-				shortlength = CalPointShortLine(pointstroke,shortlengthpoint,begin, end,longvecx, longvecy);
+				shortlength = CalPointShortLine(pointstroke,shortlengthpoint, begin, end, longvecx, longvecy);
 				cvLine(pOutlineImage,shortlengthpoint[0],shortlengthpoint[1],CV_RGB(0,0,255),1,0);
 				//计算面积
 				//pointaera = fabs(cvContourArea(pcvSeq,CV_WHOLE_SEQ));
@@ -135,53 +137,68 @@ int main( int argc, char** argv )
 					pPoint = (CvPoint *)cvGetSeqElem(pcvSeq, i);
 					strokepoint.push_back(*pPoint);
 				}
+				//笔画有的地方有时过于尖锐会导致轮廓分为好几个部分
+				//此处就是为了调试而实现的部分
+	//			DrawLine(strokepoint[0], pOutlineImage);
+	//			if(count == 2)
+	//				break;
 				//DrawLine(strokepoint[0], pOutlineImage);
 				/*CvPoint x;
 				x = strokepoint[0];
 				for(unsigned int i = 0; i < 50; i++)
 				{
-					x.x++;
-					SetPixel(bin_img, &x);
+				x.x++;
+				SetPixel(bin_img, &x);
 				}*/
 				//SetPixel(bin_img, &x);
 				//cvLine(bin_img,x,y,CV_RGB(0,0,0),1,0);
 				//SetPixel(pOutlineImage, &x);
 
 				//if(count == 3)
-					//cvLine(pOutlineImage,strokepoint[0],strokepoint[50],CV_RGB(0,0,255),1,0);
+				//cvLine(pOutlineImage,strokepoint[0],strokepoint[50],CV_RGB(0,0,255),1,0);
+				while(1){
+					if(IsHeng(strokepoint, bin_img))
+					{
+						//break;
+						cout <<"is heng"<<endl;
+						DrawHengMiddle(strokepoint, bin_img, pOutlineImage, hengstroke);
+						//break;
+					}
+					if(IsShu(strokepoint, bin_img))
+					{
+						vector<CvPoint>shustroke;
+						//DrawOutLine(strokepoint, img);
+						DrawShuMiddle(strokepoint, bin_img, pOutlineImage, shustroke);
+						cout <<"is shu" <<endl;
+					
+					}
+					
+					////if(count == 1)
+					////	DrawOutLine(strokepoint, img);
+					//DrawLine(strokepoint[0], pOutlineImage);
+					//break;
+					float ang = 0;
+					if(IsPie(strokepoint, bin_img, &ang))
+					{
+						//DrawLine(strokepoint[20], pOutlineImage);
+						cout << "is pie" << endl;
+						DrawPieMiddle(strokepoint, bin_img, pOutlineImage,piestroke, ang);
+					}
+				
+					if(IsNa(strokepoint, bin_img))
+					{
+						cout << "Is Na" << endl;
+						DrawNaMiddle(strokepoint, bin_img, pOutlineImage, nastroke);
+					}
+					//break;
 
-   				if(IsHeng(strokepoint, bin_img))
-				{
-					cout <<"is heng"<<endl;
-					DrawHengMiddle(strokepoint,bin_img,pOutlineImage,hengstroke);
+					if(strokepoint.size() < 250)
+						break;
 				}
 
-				if(IsShu(strokepoint, bin_img))
-				{
-					vector<CvPoint>shustroke;
-					//DrawOutLine(strokepoint, img);
-					DrawShuMiddle(strokepoint,bin_img,pOutlineImage,shustroke);
-					cout <<"is shu" <<endl;
-				}
-
-				////if(count == 1)
-				////	DrawOutLine(strokepoint, img);
-
-				float ang = 0;
-				if(IsPie(strokepoint, bin_img, &ang))
-				{
-					cout << "is pie" << endl;
-					DrawPieMiddle(strokepoint, bin_img, pOutlineImage,piestroke, ang);
-				}
-
-				if(IsNa(strokepoint, bin_img))
-				{
-					cout << "Is Na" << endl;
-					DrawNaMiddle(strokepoint, bin_img, pOutlineImage, nastroke);
-				}
-
+				DrawLine(strokepoint[0], pOutlineImage);
 				//if(strokepoint.size() == 28)
-					//DrawOutLine(strokepoint, pOutlineImage);
+				//DrawOutLine(strokepoint, pOutlineImage);
 				//if(IsGou(strokepoint, bin_img))
 				//{
 				//	cout << "Is Gou" << endl;
@@ -192,8 +209,8 @@ int main( int argc, char** argv )
 		/*
 		for(int i = 0; i < pcvSeq->total; i++)
 		{
-			pPoint = (CvPoint *)cvGetSeqElem(pcvSeq, i);
-			res = GetPixel(bin_img, pPoint);
+		pPoint = (CvPoint *)cvGetSeqElem(pcvSeq, i);
+		res = GetPixel(bin_img, pPoint);
 		}*/
 	}
 	//assert(count != 2);
@@ -212,15 +229,15 @@ int main( int argc, char** argv )
 	cvShowImage("原图",img);
 	cvNamedWindow("二值化",CV_WINDOW_AUTOSIZE);
 	cvShowImage("二值化",bin_img);
-    cvWaitKey(0);
-    cvReleaseImage(&img);
+	cvWaitKey(0);
+	cvReleaseImage(&img);
 	cvReleaseImage(&gray_img);
 	cvReleaseImage(&bin_img);
 	cvReleaseImage(&pOutlineImage);
-	
-    cvDestroyWindow("原图");
+
+	cvDestroyWindow("原图");
 	cvDestroyWindow("二值化");
 	cvDestroyWindow("轮廓图");
 
-    return 0;  
+	return 0;  
 }

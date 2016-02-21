@@ -52,7 +52,7 @@ int CalPointLongLine(const vector<CvPoint>&cv, vector<CvPoint>& store)
 	  longvecx是长边的向量的x值，longvecy是长边向量的y值
 输出：返回短边的长度，并把短边开始与结束点存入shortstore中
 */
-int CalPointShortLine(const vector<CvPoint>&cv, vector<CvPoint> & shortstore, int begin, int end, int longvecx, int longvecy)
+int CalPointShortLine(const vector<CvPoint>& cv, vector<CvPoint>& shortstore, int begin, int end, int longvecx, int longvecy)
 {
 	int shortlinelength = 0;
 	for(int i = begin + 1; i < end; i++)
@@ -62,7 +62,8 @@ int CalPointShortLine(const vector<CvPoint>&cv, vector<CvPoint> & shortstore, in
 			int shortvecx = 0, shortvecy = 0;
 			shortvecx= cv[i].x - cv[j].x;
 			shortvecy = cv[i].y - cv[j].y;
-			if(abs(shortvecx * longvecx + shortvecy * longvecy) < 10)
+			//此处注意设置合适的阈值
+			if(abs(shortvecx * longvecx + shortvecy * longvecy) < 15)
 			{
 				int temp = (int)sqrt(pow(abs(cv[i].x-cv[j].x),2)+pow(abs(cv[i].y-cv[j].y),2));
 				if(temp > shortlinelength)
@@ -80,7 +81,7 @@ int CalPointShortLine(const vector<CvPoint>&cv, vector<CvPoint> & shortstore, in
 			int shortvecx = 0, shortvecy = 0;
 			shortvecx= cv[i].x - cv[j].x;
 			shortvecy = cv[i].y - cv[j].y;
-			if(abs(shortvecx * longvecx + shortvecy * longvecy) < 10)
+			if(abs(shortvecx * longvecx + shortvecy * longvecy) < 15)
 			{
 				int temp = (int)sqrt(pow(abs(cv[i].x-cv[j].x),2)+pow(abs(cv[i].y-cv[j].y),2));
 				if(temp > shortlinelength)
@@ -93,5 +94,6 @@ int CalPointShortLine(const vector<CvPoint>&cv, vector<CvPoint> & shortstore, in
 			}
 		}	
 	}
+
 	return shortlinelength;
 }

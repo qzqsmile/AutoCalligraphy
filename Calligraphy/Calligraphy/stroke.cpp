@@ -44,9 +44,10 @@ void DrawLine(CvPoint&s, IplImage *out_img)
 */
 bool IsHeng(const vector<CvPoint>& strokepoint, const IplImage * img)
 {
+	//version1 通过划线的方式进行判断,效果一般
 	CvPoint testpoint = strokepoint[0];
 	testpoint.y += 10;
-	int res;// = GetPixel(img, &testpoint);
+	int res; // = GetPixel(img, &testpoint);
 	res = GetPixel(img, &strokepoint[0]);
 
 	if(GetPixel(img, &testpoint))
@@ -59,7 +60,7 @@ bool IsHeng(const vector<CvPoint>& strokepoint, const IplImage * img)
 	}
 	int pixelcount = 0;
 	CvPoint countpoint = testpoint;
-	int begin = max(0, testpoint.x-20), end = min(testpoint.x+50, img->width);
+	int begin = max(0, testpoint.x-50), end = min(testpoint.x+50, img->width);
 	for(int i = begin; i < end; i++)
 	{
 		countpoint.x = i;
@@ -68,7 +69,7 @@ bool IsHeng(const vector<CvPoint>& strokepoint, const IplImage * img)
 	}
 
 	//大于40像素则认为是横
-	if(pixelcount > 40)
+	if(pixelcount > 55)
 		return true;
 
 	return false;
@@ -109,7 +110,9 @@ bool IsShu(const vector<CvPoint>& stroke, const IplImage *img)
 	CvPoint pre;
 	int count = 0;
 	//从index下标处开始计算，用以排除干扰
-	int xindex = stroke[2].x;
+	int xindex = stroke[0].x;
+	if(stroke.size() > 10)
+		xindex = stroke[10].x;
 	for(unsigned int i = 0; i < stroke.size(); i++)
 	{
 		if(i == 0)
@@ -117,12 +120,12 @@ bool IsShu(const vector<CvPoint>& stroke, const IplImage *img)
 			pre = stroke[i];
 			continue;
 		}
-		if(i > 15)
+		if(i > 40)
 			return false;
-		if(count >= 8)
+		if(count >= 10)
 			return true;
-		//x, y是否符合相应的位置关系
-		if(((stroke[i].x <= (xindex+2)) && (stroke[i].x >= (xindex-2))) && (stroke[i].y >= pre.y))
+		//x, y是否符合相应的位置关系,这里注意设置合适的阈值
+		if(((stroke[i].x <= (xindex+10)) && (stroke[i].x >= (xindex-10))) && (stroke[i].y >= pre.y))
 		{
 			count++;
 		}
@@ -141,13 +144,14 @@ void DrawShuMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 		cout << "point number is less than 4" << endl;
 		return ;
 	}
-	CvPoint testpoint = stroke[3];
-	testpoint.x += 5;
+	CvPoint testpoint = stroke[10];
+	//DrawLine(testpoint, outimg);
+	testpoint.x += 10;
 	if(IsWhite(img, &testpoint))
 	{
-		testpoint.x -= 10;
+		testpoint.x -= 20;
 	}
-
+	//DrawLine(testpoint, outimg);
 	CvPoint testup, testdown;
 	testup = testdown = testpoint;
 	int up = 0, down = INT_MAX;
@@ -177,6 +181,7 @@ void DrawShuMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 
 	predrawpoint.y = 10000;
 	vector<int> shuwidth;
+	vector<int> shuindex;
 	int midwidth = 0;
 	//寻找中位数
 	for(int i = up; i <= down; i++)
@@ -207,13 +212,18 @@ void DrawShuMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 			}
 		}
 
-		shuwidth.push_back((right+left)/2);
+		shuwidth.push_back(right-left);
+		shuindex.push_back((right+left)/2);
 	}
 	//排序，并记录中位线的左边，用以下边排除错误
+	int shumidindex = 0;
 	sort(shuwidth.begin(), shuwidth.end());
+	sort(shuindex.begin(), shuindex.end());
 	midwidth = shuwidth[shuwidth.size()/2];
+	shumidindex = shuindex[shuindex.size()/2];
 
 	//开始画线
+	vector<int> leftstore, rightstore;
 	for(int i = up; i <= down; i++)
 	{
 		int left = 0, right = 0;
@@ -232,6 +242,7 @@ void DrawShuMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 				//up = maxup;
 				break;
 				}*/
+				leftstore.push_back(left);
 				if(maxleft > left)
 					maxleft = left;
 				break;
@@ -248,6 +259,7 @@ void DrawShuMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 				{
 				break ;
 				}*/
+				rightstore.push_back(right);
 				if(maxright < right)
 					maxright = right;
 				break;
@@ -256,8 +268,9 @@ void DrawShuMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 		//ave = (up+down) / 2;
 
 		nextdrawpoint.x = (left + right) / 2;
-		if((left+right / 2) > (midwidth+20))
-			nextdrawpoint.x = midwidth;
+		//这里要注意调整参数，
+		if((right-left) > (midwidth+15))
+			nextdrawpoint.x = shumidindex;
 		nextdrawpoint.y = i;
 		//第一次不画线，先确定第一个起始点
 		if(predrawpoint.y == 10000)
@@ -276,23 +289,28 @@ void DrawShuMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 		predrawpoint = nextdrawpoint;
 	}
 
+	sort(leftstore.begin(), leftstore.end());
+	sort(rightstore.begin(), rightstore.end());
+	maxleft = leftstore[leftstore.size() / 2]-5;
+	maxright = rightstore[rightstore.size() / 2]+5;
 	//删除竖线的点,有点问题
 	vector<CvPoint> noshu;
 	for(unsigned int i = 0; i < stroke.size(); i++)
 	{
 		CvPoint point = stroke[i];
-		if(((2 * midwidth-maxright) < point.x)&&(maxright > point.x)&&
-			(down > point.y)&&(up < point.y))
+		if((maxleft < point.x)&&(maxright > point.x)&&
+			((down+10) > point.y)&&((up-5) < point.y))
 			shustroke.push_back(point);
 		else
 			noshu.push_back(point);
 	}
 	CvPoint x;
-	x.x = 2 *midwidth - maxright;
+	x.x = 2 * midwidth - maxright;
 	x.y = 1;
 	//DrawLine(x,outimg);
 	stroke.clear();
 	stroke = noshu;
+	//DrawOutLine(stroke,outimg);
 }
 
 /*
@@ -301,11 +319,11 @@ void DrawShuMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 void DrawHengMiddle(vector<CvPoint> &stroke, const IplImage *img, IplImage *Outimg, vector<CvPoint>& hengstroke)
 {
 	CvPoint testpoint = stroke[0];
-	testpoint.y += 15;
+	testpoint.y += 25;
 
 	if(GetPixel(img, &testpoint))
 	{
-		testpoint.y -= 5;
+		testpoint.y -= 44;
 	}
 	int left = 0, right = 0;
 
@@ -333,6 +351,54 @@ void DrawHengMiddle(vector<CvPoint> &stroke, const IplImage *img, IplImage *Outi
 			break;
 		}
 	}
+
+	/*CvPoint testpoint, testleft, testright;
+	int left, right;
+	left = right = 0;*/
+
+	vector<int> hengwidth;
+	vector<int> hengindex;
+	int midwidth = 0;
+	//寻找中位数
+	for(int i = left; i <= right; i++)
+	{
+		int up = 0, down = 0;
+		CvPoint testup, testdown;
+		testup.x = testdown.x = i;
+
+		//确定上边
+		for(int j = testpoint.y; j > 0; j--)
+		{
+			testup.y = j;
+			if(IsWhite(img, &testup))
+			{
+				up = j;
+				break;
+			}
+		}
+
+		//确定下边
+		for(int j = testpoint.y; j < (img->height); j++)
+		{
+			testdown.y = j;
+			if(IsWhite(img, &testdown))
+			{
+				down = j;
+				break;
+			}
+		}
+
+		hengwidth.push_back(down-up);
+		hengindex.push_back((up+down)/2);
+	}
+	//排序，并记录中位线的左边，用以下边排除错误
+	int hengmidindex = 0;
+	sort(hengwidth.begin(), hengwidth.end());
+	sort(hengindex.begin(), hengindex.end());
+	midwidth = hengwidth[hengwidth.size()/2];
+	hengmidindex = hengindex[hengindex.size()/5];
+	hengmidindex = hengindex[hengindex.size()/3];
+
 	CvPoint testup, testdown, predrawpoint, nextdrawpoint;
 	testup.x = testdown.x = testpoint.x;
 	testup.y = testdown.y = testpoint.y;
@@ -341,9 +407,11 @@ void DrawHengMiddle(vector<CvPoint> &stroke, const IplImage *img, IplImage *Outi
 	int maxup = INT_MAX, mindown = INT_MIN;
 	//画中位线
 	int ave = INT_MAX/2;
-	for(int i = left; i < right; i++)
+	//left从1开始可以排除些干扰
+	for(int i = left+1; i < right; i++)
 	{
 		int up = 0, down = 0;
+		
 		//确定up
 		testup.x = testdown.x = i;
 		for(int j = testpoint.y; j > 0; j--)
@@ -387,13 +455,18 @@ void DrawHengMiddle(vector<CvPoint> &stroke, const IplImage *img, IplImage *Outi
 			predrawpoint.y = (up+down) /2 ;
 			continue;
 		}
-		if((nextdrawpoint.y - predrawpoint.y) > 5)
-		{
-			//right = predrawpoint.x;
-			//break;
-			nextdrawpoint.x = i;
+		
+		//if((nextdrawpoint.y - predrawpoint.y) > 5)
+		//{
+		//	//right = predrawpoint.x;
+		//	//break;
+		//	nextdrawpoint.x = i;
+		//	nextdrawpoint.y = predrawpoint.y;
+		//}
+		if((down-up) > midwidth+5)
 			nextdrawpoint.y = predrawpoint.y;
-		}
+		if(i >= right)
+			nextdrawpoint.y = predrawpoint.y;
 		cvLine(Outimg,predrawpoint,nextdrawpoint,CV_RGB(0,0,255),1,0);
 		predrawpoint = nextdrawpoint;
 	}
@@ -403,20 +476,21 @@ void DrawHengMiddle(vector<CvPoint> &stroke, const IplImage *img, IplImage *Outi
 	for(unsigned int i = 0; i < stroke.size(); i++)
 	{
 		CvPoint point = stroke[i];
-		if(((left-18) < point.x)&&(right > point.x)&&
-			(maxup < point.y)&&(mindown > point.y))
+		if(((left-5) < point.x)&&(right+10 > point.x)&&
+			(maxup-5 < point.y)&&(mindown+5 > point.y))
 			hengstroke.push_back(point);
 		else
 			noheng.push_back(point);
 	}
 	stroke.clear();
 	stroke = noheng;
+//	DrawOutLine(stroke, Outimg);
 }
 
 /*
 是不是撇,是撇的话返回true；否则返回false
 */
-bool IsPie(const vector<CvPoint>& stroke, const IplImage *img, float * ang)
+bool IsPie(const vector<CvPoint>& stroke, const IplImage *img, float *ang)
 {
 	if(stroke.size() < 40)
 	{
@@ -424,6 +498,7 @@ bool IsPie(const vector<CvPoint>& stroke, const IplImage *img, float * ang)
 		return false;
 	}
 	vector<float> angle;
+	int count = 0;
 
 	for(int i = 0; i < 20; i++)
 	{
@@ -432,17 +507,22 @@ bool IsPie(const vector<CvPoint>& stroke, const IplImage *img, float * ang)
 		if(stroke[i].x == stroke[i+20].x)
 			continue;
 		x = (float)(stroke[i+20].y - stroke[i].y) / (stroke[i+20].x - stroke[i].x);
-		x = fabs(x);
-		angle.push_back(x);
+		//x = fabs(x);
+		if((-0.5 > x) && (x > -3.0))
+			count++;
+	//	angle.push_back(x);
 	}
 
-	sort(angle.begin(), angle.end());
-	float midangle = angle[angle.size()/2];
-	*ang = midangle;
-	//如果角度在某个范围内的话，就认为其是撇
-	if((0.5 < midangle) && (midangle < 3.0))
+	if(count > 8)
 		return true;
 	return false;
+	//sort(angle.begin(), angle.end());
+	//float midangle = angle[angle.size()/2];
+	//*ang = midangle;
+	////如果角度在某个范围内的话，就认为其是撇
+	//if((0.5 < midangle) && (midangle < 3.0))
+	//	return true;
+	//return false;
 }
 /*
 画出撇的中位线
@@ -518,7 +598,7 @@ void DrawPieMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 		if((stroke[i].x <= pre.x) && (stroke[i].y >= pre.y))
 		{
 			pre = stroke[i];
-			count ++;
+			count++;
 		}
 		pre = stroke[i];
 		if(count >= 2)
@@ -785,7 +865,7 @@ void DrawPieMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 */ 
 bool IsNa(const vector<CvPoint>&stroke, const IplImage *img)
 {
-	CvPoint pre;
+	/*CvPoint pre;
 	int count = 0;
 	for(unsigned int i = 0; i < stroke.size(); i++)
 	{
@@ -794,9 +874,9 @@ bool IsNa(const vector<CvPoint>&stroke, const IplImage *img)
 			pre = stroke[i];
 			continue;
 		}
-		if(i > 10)
+		if(i > 15)
 			return false;
-		if(count >= 5)
+		if(count >= 7)
 			return true;
 		if((stroke[i].x >= pre.x) && (stroke[i].y >= pre.y))
 		{
@@ -804,7 +884,38 @@ bool IsNa(const vector<CvPoint>&stroke, const IplImage *img)
 		}
 		pre = stroke[i];
 	}
+	return false;*/
+	if(stroke.size() < 40)
+	{
+		cout << "na Stroke point is too less" << endl;
+		return false;
+	}
+	vector<float> angle;
+	int count = 0;
+
+	for(int i = 0; i < 20; i++)
+	{
+		float x = 0;
+		//防止除0
+		if(stroke[i].x == stroke[i+20].x)
+			continue;
+		x = (float)(stroke[i+20].y - stroke[i].y) / (stroke[i+20].x - stroke[i].x);
+		//x = fabs(x);
+		if((0.5 < x) && (x < 3.0))
+			count++;
+	//	angle.push_back(x);
+	}
+
+	if(count > 15)
+		return true;
 	return false;
+	//sort(angle.begin(), angle.end());
+	//float midangle = angle[angle.size()/2];
+	//*ang = midangle;
+	////如果角度在某个范围内的话，就认为其是撇
+	//if((0.5 < midangle) && (midangle < 3.0))
+	//	return true;
+	//return false;
 }
 
 /*
@@ -849,7 +960,7 @@ void DrawNaMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg,
 		{
 			count++;
 			pre = stroke[i];
-			//确定up点
+			//确定down点
 			if(count > NA_COUNT)
 			{
 				testdown = pre;
@@ -860,7 +971,7 @@ void DrawNaMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg,
 	}
 
 	//DrawLine(testdown, outimg);
-	//确定撇的方向
+	//确定捺的方向
 	bool is_left_true = true;
 	CvPoint test = stroke[3];
 	test.x = test.x - 3;
@@ -913,8 +1024,8 @@ void DrawNaMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg,
 		cvLine(outimg,predrawpoint,nextdrawpoint,CV_RGB(0,0,255),1,0);
 		predrawpoint = nextdrawpoint;
 	}
-	//去掉相应的点
 
+	//去掉相应的点
 	vector<CvPoint> nona;
 	for(unsigned int i = 0; i < stroke.size(); i++)
 	{
@@ -926,6 +1037,7 @@ void DrawNaMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg,
 	}
 	stroke.clear();
 	stroke = nona;
+	DrawOutLine(stroke, outimg);
 }
 
 /*
