@@ -29,6 +29,7 @@ class Point
 bool IsPoint(const CvSeq *pstroke);
 int CalPointLongLine(const vector<CvPoint>&cv, vector<CvPoint>& store);
 int CalPointShortLine(const vector<CvPoint>&cv, vector<CvPoint> & shortstore, int begin, int end, int longvecx, int longvecy);
+void DrawWaterDrop(IplImage *img, int a, int b);
 
 #endif
 

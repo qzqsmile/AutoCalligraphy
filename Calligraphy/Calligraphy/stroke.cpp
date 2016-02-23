@@ -9,8 +9,30 @@ enum{
 	PIE_COUNT = 8 
 };
 enum{
-	NA_COUNT = 5
+	NA_COUNT = 2
 };
+
+
+/*
+在轮廓点钟，寻找离点（x,y）最近的点。并返回其下边
+*/
+int findneareastpoint(const int x, const int y, const vector<CvPoint>& stroke)
+{
+	int minindex = 0, min = INT_MAX;
+	for(unsigned int i = 0; i < stroke.size(); i++)
+	{
+		int res;
+		res = (int)sqrt(pow((stroke[i].x-x), 2) + pow((stroke[i].y-y),2));
+		if(res < min)
+		{
+			min = res;
+			minindex = i;
+		}
+	}
+
+	return minindex;
+}
+
 /*
 for debug
 vector中的点通过线连接起来
@@ -34,7 +56,7 @@ void DrawOutLine(vector<CvPoint>&stroke, IplImage * img)
 确定是哪一个点
 */
 
-void DrawLine(CvPoint&s, IplImage *out_img)
+void DrawLine(const CvPoint&s, IplImage *out_img)
 {
 	CvPoint s1 = s;
 	s1.y = out_img->height;
@@ -69,7 +91,7 @@ bool IsHeng(const vector<CvPoint>& strokepoint, const IplImage * img)
 	}
 
 	//大于40像素则认为是横
-	if(pixelcount > 55)
+	if(pixelcount > 60)
 		return true;
 
 	return false;
@@ -91,7 +113,7 @@ bool IsShu(const vector<CvPoint>& stroke, const IplImage *img)
 		testpoint.x -= 10;
 	if(GetPixel(img, &testpoint))
 		return false;
-	//width ?
+	width ?
 	int up = max(0, testpoint.y-80), down = min(testpoint.y+100, img->width);
 	int pixelcount = 0;
 	CvPoint countpoint = testpoint;
@@ -107,15 +129,20 @@ bool IsShu(const vector<CvPoint>& stroke, const IplImage *img)
 	return false;*/
 
 	//version2
+	if(stroke.size() < 40)
+	{
+		cout <<"shu  point is too less"<<endl;
+		return false;
+	}
 	CvPoint pre;
 	int count = 0;
 	//从index下标处开始计算，用以排除干扰
 	int xindex = stroke[0].x;
-	if(stroke.size() > 10)
-		xindex = stroke[10].x;
-	for(unsigned int i = 0; i < stroke.size(); i++)
+	if(stroke.size() > 20)
+		xindex = stroke[20].x;
+	for(unsigned int i = 20; i < stroke.size(); i++)
 	{
-		if(i == 0)
+		if(i == 20)
 		{
 			pre = stroke[i];
 			continue;
@@ -407,6 +434,8 @@ void DrawHengMiddle(vector<CvPoint> &stroke, const IplImage *img, IplImage *Outi
 	int maxup = INT_MAX, mindown = INT_MIN;
 	//画中位线
 	int ave = INT_MAX/2;
+	//用以控制横线的角度
+	int risecount = 0;
 	//left从1开始可以排除些干扰
 	for(int i = left+1; i < right; i++)
 	{
@@ -464,7 +493,16 @@ void DrawHengMiddle(vector<CvPoint> &stroke, const IplImage *img, IplImage *Outi
 		//	nextdrawpoint.y = predrawpoint.y;
 		//}
 		if((down-up) > midwidth+5)
+		{
 			nextdrawpoint.y = predrawpoint.y;
+			risecount++;
+			//这里主要是为了保持横线的角度
+			if(risecount == 6)
+			{
+				risecount = 0;
+				nextdrawpoint.y = predrawpoint.y - 1;	
+			}
+		}
 		if(i >= right)
 			nextdrawpoint.y = predrawpoint.y;
 		cvLine(Outimg,predrawpoint,nextdrawpoint,CV_RGB(0,0,255),1,0);
@@ -484,7 +522,8 @@ void DrawHengMiddle(vector<CvPoint> &stroke, const IplImage *img, IplImage *Outi
 	}
 	stroke.clear();
 	stroke = noheng;
-//	DrawOutLine(stroke, Outimg);
+	//DrawOutLine(stroke, Outimg);
+	//DrawLine(stroke[0], Outimg);
 }
 
 /*
@@ -601,16 +640,16 @@ void DrawPieMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 			count++;
 		}
 		pre = stroke[i];
-		if(count >= 2)
+		if(count >= 1)
 		{
 			begin = i;
 			break;
 		}
-		
 	}
 
 	count = 0;
 	testup = pre = stroke[begin];
+	//DrawLine(stroke[begin], outimg);
 	//确定down
 	for(unsigned int i = begin; i < stroke.size(); i++)
 	{
@@ -647,7 +686,7 @@ void DrawPieMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 
 	for(int i = begin; i < down_index; i++)
 	{
-		nextdrawpoint.y = stroke[i].y;
+	/*	nextdrawpoint.y = stroke[i].y;
 		if(is_left_true)
 		{
 			for(int j = stroke[i].x-3; j > 0; j--)
@@ -680,18 +719,79 @@ void DrawPieMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg
 				}
 			}
 		}
+*/
+		nextdrawpoint.x = stroke[i].x;
+		//通过这个参数确定轮廓的开始点是上边还是下边
+		bool is_up = true;
+		CvPoint testpoint = stroke[0];
+		testpoint.y = testpoint.y + 5;
+		if(IsWhite(outimg, &testpoint))
+		{
+			is_up = false;
+		}
+		int minindex = 0 ;
+		//从3开始可以去除一些干扰
+		if(is_up)
+		{
+			for(int j = stroke[i].y+3; j < img->height; j++)
+			{
+				nextdrawpoint.y = j;
+				if(IsWhite(img, &nextdrawpoint))
+				{
+					nextdrawpoint.y = (j+stroke[i].y) / 2;
+					if(predrawpoint.x == -1)
+					{
+						predrawpoint = nextdrawpoint;
+						//这里要求捺不能有相交点
+						minindex = findneareastpoint(nextdrawpoint.x, j, stroke);
+					}
+					break;
+				}
+			}
+		}
+		else
+		{
+			for(int j = stroke[i].y-3; j > 0; j--)
+			{
+				nextdrawpoint.y = j;
+				if(IsWhite(img, &nextdrawpoint))
+				{
+					nextdrawpoint.y = (j + stroke[i].y) / 2;
+					if(predrawpoint.x == -1)
+					{
+						predrawpoint = nextdrawpoint;
+						minindex = findneareastpoint(nextdrawpoint.x, j, stroke);
+					}
+					break;
+				}
+			}
+		}
 
-		cvLine(outimg, predrawpoint, nextdrawpoint,CV_RGB(0,0,255),1,0);
+		cvLine(outimg,predrawpoint,nextdrawpoint,CV_RGB(0,0,255),1,0);
 		predrawpoint = nextdrawpoint;
 	}
 	//去掉相应的点
 
-	vector<CvPoint> nopie;
+	/*vector<CvPoint> nopie;
 	for(unsigned int i = 0; i < stroke.size(); i++)
 	{
 		CvPoint point = stroke[i];
 		if((point.y >= stroke[0].y)  && (point.y <= stroke[down_index-1].y))
 			piestroke.push_back(point);
+		else
+			nopie.push_back(point);
+	}
+	stroke.clear();
+	stroke = nopie;*/
+
+	//去除相应的点
+	vector<CvPoint> pie;
+	vector<CvPoint> nopie;
+	for(unsigned int i = 0; i < stroke.size(); i++)
+	{
+		CvPoint point = stroke[i];
+		if((i > begin) && (i < down_index))
+			pie.push_back(point);
 		else
 			nopie.push_back(point);
 	}
@@ -939,7 +1039,7 @@ void DrawNaMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg,
 			count ++;
 		}
 		pre = stroke[i];
-		if(count >= 3)
+		if(count >= 1)
 		{
 			begin = i;
 			break;
@@ -949,6 +1049,7 @@ void DrawNaMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg,
 
 	count = 0;
 	testup = pre = stroke[begin];
+//	DrawLine(stroke[0], outimg);
 	//确定down
 	for(unsigned int i = begin; i < stroke.size(); i++)
 	{
@@ -969,7 +1070,8 @@ void DrawNaMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg,
 			}
 		}
 	}
-
+	//DrawLine(stroke[begin], outimg);
+	//DrawLine(stroke[down_index],outimg);
 	//DrawLine(testdown, outimg);
 	//确定捺的方向
 	bool is_left_true = true;
@@ -984,9 +1086,10 @@ void DrawNaMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg,
 	vector<CvPoint> d;
 	predrawpoint.x = -1;
 
+	int minindex = 0;
 	for(int i = begin; i < down_index; i++)
 	{
-		nextdrawpoint.y = stroke[i].y;
+		/*nextdrawpoint.y = stroke[i].y;
 		if(is_left_true)
 		{
 			for(int j = stroke[i].x-8; j > 0; j--)
@@ -1020,7 +1123,28 @@ void DrawNaMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg,
 			}
 		}
 
-		d.push_back(predrawpoint);
+		d.push_back(predrawpoint);*/
+
+		nextdrawpoint.x = stroke[i].x;
+		//从3开始可以去除一些干扰
+		for(int j = stroke[i].y+3; j < img->height; j++)
+		{
+			nextdrawpoint.y = j;
+			if(IsWhite(img, &nextdrawpoint))
+			{
+				nextdrawpoint.y = (j+stroke[i].y) / 2;
+				if(predrawpoint.x == -1)
+				{
+					predrawpoint = nextdrawpoint;
+					//这里要求捺不能有相交点
+					minindex = findneareastpoint(nextdrawpoint.x, j, stroke);
+					//DrawLine(nextdrawpoint, outimg);
+					//DrawLine(stroke[minindex], outimg);
+				}
+				break;
+			}
+		}
+
 		cvLine(outimg,predrawpoint,nextdrawpoint,CV_RGB(0,0,255),1,0);
 		predrawpoint = nextdrawpoint;
 	}
@@ -1029,15 +1153,20 @@ void DrawNaMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg,
 	vector<CvPoint> nona;
 	for(unsigned int i = 0; i < stroke.size(); i++)
 	{
-		CvPoint point = stroke[i];
+	/*	CvPoint point = stroke[i];
 		if((point.y >= stroke[0].y)  && (point.y <= stroke[down_index-1].y))
 			nastroke.push_back(point);
 		else
-			nona.push_back(point);
+			nona.push_back(point);*/
+		if((i >= begin && i <= down_index) || (i >= down_index && i <= minindex))
+			nastroke.push_back(stroke[i]);
+		else
+			nona.push_back(stroke[i]);
 	}
 	stroke.clear();
 	stroke = nona;
 	DrawOutLine(stroke, outimg);
+	//DrawLine(stroke[0], outimg);
 }
 
 /*

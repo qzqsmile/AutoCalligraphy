@@ -1,7 +1,31 @@
 #include"point.h"
 #include<vector>
+#include<cmath>
 
 using namespace std;
+
+/*
+画水滴形状，用以比较
+*/
+void DrawWaterDrop(IplImage *img, int a, int b)
+{
+	float i = 0;
+	int x0 = img->width / 2;
+	CvPoint prepoint, nextpoint;
+	prepoint.x = nextpoint.x = -1;
+
+	while(i < 8.0)
+	{
+		i = i+0.1;
+		nextpoint.x = (int) a * (1 - sin(i)) * cos(i) + x0;
+		nextpoint.y = (int) b * (sin(i) - 1);
+		if(prepoint.x == -1)
+			prepoint = nextpoint;
+		cvLine(img, prepoint, nextpoint, CV_RGB(0,0,255),1,0);
+		prepoint = nextpoint;
+	}
+}
+
 
 /*
 功能：判断输入的轮廓是不是一个点的轮廓

@@ -37,6 +37,7 @@ void DrawHengMiddle(vector<CvPoint> &stroke, const IplImage *img, IplImage *Outi
 void DrawOutLine(vector<CvPoint>&stroke, IplImage * img);
 void DrawPieMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg, vector<CvPoint>& shustroke, float ang);
 void DrawNaMiddle(vector<CvPoint>&stroke, const IplImage *img, IplImage *outimg, vector<CvPoint>& shustroke);
-void DrawLine(CvPoint&s, IplImage *out_img);
+void DrawLine(const CvPoint&s, IplImage *out_img);
+int findneareastpoint(const int x, const int y, const vector<CvPoint>& stroke);
 
 #endif

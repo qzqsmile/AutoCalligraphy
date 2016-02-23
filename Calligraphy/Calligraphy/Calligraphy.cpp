@@ -13,7 +13,7 @@ using namespace std;
 uchar GetPixel(const IplImage *img, const CvPoint* p);
 bool IsHeng(const vector<CvPoint>& strokepoint, const IplImage * img);
 void SetPixel(IplImage *img, const CvPoint *p);
-void DrawHengMiddle(vector<CvPoint> &stroke,const IplImage *img, IplImage * outimg, vector<CvPoint>& hengstroke);
+//void DrawHengMiddle(vector<CvPoint> &stroke,const IplImage *img, IplImage * outimg, vector<CvPoint>& hengstroke);
 
 
 int main( int argc, char** argv )  
@@ -63,8 +63,9 @@ int main( int argc, char** argv )
 	IplImage *pOutlineImage = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
 	int nlevels = 3;
 	cvRectangle(pOutlineImage, cvPoint(0, 0), cvPoint(pOutlineImage->width, pOutlineImage->height), CV_RGB(255, 255, 255), CV_FILLED);  
+	IplImage *waterdrop = cvCloneImage(pOutlineImage);
 	cvDrawContours(pOutlineImage, pcvSeq, CV_RGB(255,0,0), CV_RGB(0,255,0), nlevels, 1);
-
+	
 	//获取轮廓的像素坐标
 	CvPoint *pPoint = NULL;
 	int count = 0;
@@ -111,10 +112,16 @@ int main( int argc, char** argv )
 						end = i;
 				}
 				//计算线段的中位点,这里要注意调整相应的参数
-				//end = begin + pointstroke.size() / 2 - 3;
+				//end = begin + pointstroke.size() / 2 - 5;
 				//begin =  (end + pointstroke.size()) / 2;
-				begin = begin - 2;
+				//begin = begin - 2;
+				
+				
+				//int a;
+				//画长边
 				cvLine(pOutlineImage,pointstroke[begin],pointstroke[end],CV_RGB(0,0,255),1,0);
+				
+				//a = (int)sqrt(pow(pointstroke[begin].x-pointstroke[end].x,2)+pow(pointstroke[begin].y-pointstroke[end].y, 2));
 				if(begin > end)
 					swap(begin, end);
 				//计算雨滴短边
@@ -123,8 +130,11 @@ int main( int argc, char** argv )
 				longvecy = longlengthpoint[0].y - longlengthpoint[1].y;
 				shortlength = CalPointShortLine(pointstroke,shortlengthpoint, begin, end, longvecx, longvecy);
 				cvLine(pOutlineImage,shortlengthpoint[0],shortlengthpoint[1],CV_RGB(0,0,255),1,0);
+				//DrawWaterDrop(waterdrop, a, shortlength);
+
 				//计算面积
 				//pointaera = fabs(cvContourArea(pcvSeq,CV_WHOLE_SEQ));
+			
 			}
 			else 
 			{
@@ -132,6 +142,7 @@ int main( int argc, char** argv )
 				vector<CvPoint> hengstroke;
 				vector<CvPoint> piestroke;
 				vector<CvPoint> nastroke;
+
 				for(int i = 0; i < pcvSeq->total; i++)
 				{
 					pPoint = (CvPoint *)cvGetSeqElem(pcvSeq, i);
@@ -164,6 +175,8 @@ int main( int argc, char** argv )
 						DrawHengMiddle(strokepoint, bin_img, pOutlineImage, hengstroke);
 						//break;
 					}
+
+					float ang = 0;
 					if(IsShu(strokepoint, bin_img))
 					{
 						vector<CvPoint>shustroke;
@@ -172,12 +185,13 @@ int main( int argc, char** argv )
 						cout <<"is shu" <<endl;
 					
 					}
-					
+				/*	drawLine(strokepoint[10], pOutlineImage);
+					break;*/
 					////if(count == 1)
 					////	DrawOutLine(strokepoint, img);
 					//DrawLine(strokepoint[0], pOutlineImage);
 					//break;
-					float ang = 0;
+					ang = 0;
 					if(IsPie(strokepoint, bin_img, &ang))
 					{
 						//DrawLine(strokepoint[20], pOutlineImage);
@@ -187,16 +201,18 @@ int main( int argc, char** argv )
 				
 					if(IsNa(strokepoint, bin_img))
 					{
+						//DrawLine(strokepoint[0], pOutlineImage);
 						cout << "Is Na" << endl;
 						DrawNaMiddle(strokepoint, bin_img, pOutlineImage, nastroke);
+						//DrawLine(strokepoint[0],pOutlineImage);
 					}
 					//break;
 
-					if(strokepoint.size() < 250)
+					if(strokepoint.size() < 130)
 						break;
 				}
 
-				DrawLine(strokepoint[0], pOutlineImage);
+				//DrawLine(strokepoint[0], pOutlineImage);
 				//if(strokepoint.size() == 28)
 				//DrawOutLine(strokepoint, pOutlineImage);
 				//if(IsGou(strokepoint, bin_img))
@@ -229,15 +245,21 @@ int main( int argc, char** argv )
 	cvShowImage("原图",img);
 	cvNamedWindow("二值化",CV_WINDOW_AUTOSIZE);
 	cvShowImage("二值化",bin_img);
+
+	//cvNamedWindow("水滴图",CV_WINDOW_AUTOSIZE);
+	//cvShowImage("水滴图", waterdrop);
+
 	cvWaitKey(0);
 	cvReleaseImage(&img);
 	cvReleaseImage(&gray_img);
 	cvReleaseImage(&bin_img);
 	cvReleaseImage(&pOutlineImage);
+	cvReleaseImage(&waterdrop);
 
 	cvDestroyWindow("原图");
 	cvDestroyWindow("二值化");
 	cvDestroyWindow("轮廓图");
+	cvDestroyWindow("水滴图");
 
 	return 0;  
 }

@@ -1,2 +1,6 @@
 ﻿  stroke.cpp
+d:\stroke\calligraphy\calligraphy\stroke.cpp(793): warning C4018: '>' : signed/unsigned mismatch
+d:\stroke\calligraphy\calligraphy\stroke.cpp(793): warning C4018: '<' : signed/unsigned mismatch
+d:\stroke\calligraphy\calligraphy\stroke.cpp(1161): warning C4018: '>=' : signed/unsigned mismatch
+d:\stroke\calligraphy\calligraphy\stroke.cpp(1161): warning C4018: '<=' : signed/unsigned mismatch
   Calligraphy.vcxproj -> D:\Stroke\Calligraphy\Debug\Calligraphy.exe
