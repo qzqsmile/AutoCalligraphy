@@ -83,12 +83,15 @@
   <ItemGroup>
     <ClCompile Include="Calligraphy.cpp" />
     <ClCompile Include="Exception.cpp" />
+    <ClCompile Include="generatexml.cpp" />
     <ClCompile Include="pixel.cpp" />
     <ClCompile Include="point.cpp" />
     <ClCompile Include="stroke.cpp" />
+    <ClCompile Include="word.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="exception.h" />
+    <ClInclude Include="generatexml.h" />
     <ClInclude Include="list.h" />
     <ClInclude Include="pixel.h" />
     <ClInclude Include="point.h" />

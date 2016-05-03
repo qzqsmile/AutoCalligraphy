@@ -4,6 +4,65 @@
 
 using namespace std;
 
+CvPoint point::getLongLineBegin() const
+{
+	return longbegin;
+}
+
+CvPoint point::getLongLineEnd() const
+{
+	return longend;
+}
+
+CvPoint point::getShortLineBegin() const
+{
+	return shortbegin;
+}
+
+CvPoint point::getShortLineEnd() const
+{
+	return shortend;
+}
+int point::getParA() const
+{
+	return longlength;
+}
+
+int point::getParB() const
+{
+	return shortlength;
+}
+
+void point::storeOutLine(const vector<CvPoint>& s)
+{
+	outline = s;
+}
+
+point::point():longlength(0), shortlength(0), area(0.0)
+{
+	longbegin.x = longbegin.y = 0;
+	shortbegin = longend = shortend = longbegin;
+};
+
+void point::storeLongLine(const CvPoint& begin, const CvPoint& end)
+{
+	longbegin = begin;
+	longend = end;
+}
+
+void point::storeShortLine(const CvPoint& begin, const CvPoint& end)
+{
+	shortbegin = begin;
+	shortend = end;
+}
+
+void point::calPar()
+{
+	longlength = (int)sqrt(pow((longbegin.x-longend.x), 2) + pow((longbegin.y-longend.y), 2));
+	shortlength = (int)sqrt(pow((shortbegin.x-shortend.x),2) + pow((shortbegin.y-shortend.y),2));
+}
+
+
 /*
 画水滴形状，用以比较
 */

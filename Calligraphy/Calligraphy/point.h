@@ -9,22 +9,33 @@
 
 using namespace std;
 
-class Point
+class point
 {
 	private:
-		int maxlength;
-		int shrotlength;
-		int x, y;
-		vector<CvPoint> points;
+		int longlength;
+		int shortlength;
+		vector<CvPoint> outline;
 		CvPoint longbegin;
 		CvPoint shortbegin;
 		CvPoint longend;
 		CvPoint shortend;
 		double area;
 	public:
-		Point();
-		~Point();
+		point();
+		virtual ~point(){};
+		
+		void calPar();
+		void storeLongLine(const CvPoint &begin, const CvPoint& end);
+		void storeShortLine(const CvPoint &begin, const CvPoint & end);
+		void storeOutLine(const vector<CvPoint>& s);
+		CvPoint getLongLineBegin() const;
+		CvPoint getLongLineEnd() const;
+		CvPoint getShortLineBegin() const;
+		CvPoint getShortLineEnd() const;
+		int getParA() const;
+		int getParB() const;
 };
+
 
 bool IsPoint(const CvSeq *pstroke);
 int CalPointLongLine(const vector<CvPoint>&cv, vector<CvPoint>& store);
