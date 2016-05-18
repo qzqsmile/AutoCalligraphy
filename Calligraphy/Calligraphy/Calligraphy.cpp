@@ -2,6 +2,7 @@
 #include<vector>
 #include<iostream>
 #include<cmath>
+#include"tinyxml.h"
 #include"point.h"
 #include"stroke.h"
 #include"word.h"
@@ -33,7 +34,7 @@ void rotateImage(IplImage* img, IplImage *img_rotate,int degree)
 
 int main( int argc, char** argv)  
 {     
-	const char* imagename = "..\\Res\\shen.jpg";
+	const char* imagename = "..\\Res\\5.jpg";
 
 
 	//从文件中读入图像

@@ -87,6 +87,10 @@
     <ClCompile Include="pixel.cpp" />
     <ClCompile Include="point.cpp" />
     <ClCompile Include="stroke.cpp" />
+    <ClCompile Include="tinystr.cpp" />
+    <ClCompile Include="tinyxml.cpp" />
+    <ClCompile Include="tinyxmlerror.cpp" />
+    <ClCompile Include="tinyxmlparser.cpp" />
     <ClCompile Include="word.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -96,6 +100,8 @@
     <ClInclude Include="pixel.h" />
     <ClInclude Include="point.h" />
     <ClInclude Include="stroke.h" />
+    <ClInclude Include="tinystr.h" />
+    <ClInclude Include="tinyxml.h" />
     <ClInclude Include="word.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

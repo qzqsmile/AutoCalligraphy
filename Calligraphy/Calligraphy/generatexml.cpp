@@ -1,8 +1,10 @@
 #include"generatexml.h"
+#include"tinyxml.h"
+#include"tinystr.h"
 #include"word.h"
 #include<fstream>
 
-void generatexml(Word w, vector<CvPoint>& res)
+/*void generatexml(Word w, vector<CvPoint>& res)
 {
 	ofstream file;
 	file.open("word.xml");
@@ -51,4 +53,79 @@ void generatexml(Word w, vector<CvPoint>& res)
 	}
 	file << "</Word>" << endl;
 	file.close();
+}*/
+
+void generatexml(Word w, vector<CvPoint>& res)
+{
+	TiXmlDocument *pDoc = new TiXmlDocument();
+	if(!pDoc)
+	{
+		cout <<"create xml error!"<< endl;
+		return ;
+	}
+
+	TiXmlDeclaration * pDec = new TiXmlDeclaration("1.0", "UTF-8", "yes");
+	if(!pDec)
+	{
+		cout <<"declaration is error!"<< endl;
+		return ;
+	}
+	pDoc->LinkEndChild(pDec);
+	
+	TiXmlElement* pRootNode = new TiXmlElement("Word");
+	if(!pRootNode)
+		return ;
+	pDoc->LinkEndChild(pRootNode);
+
+	//± ª≠ ˝¡ø
+	TiXmlElement* pName = new TiXmlElement("strokesnum");
+	if(!pName)
+		return;
+
+	char strokenum[5];
+	_itoa_s(w.getStroke().size(), strokenum, 5);
+	TiXmlText *strokenumtag = new TiXmlText(strokenum);
+	pName->LinkEndChild(strokenumtag);
+	pRootNode->LinkEndChild(pName);
+
+	//± ª≠Œª÷√
+	TiXmlElement *strokeplacetag = new TiXmlElement("strokeplace");
+
+	for(unsigned int i = 0; i < w.getStroke().size(); i++)
+	{
+		TiXmlElement* strokebeginplace = new TiXmlElement("beginplace");
+		TiXmlElement* placex = new TiXmlElement("x");
+		TiXmlElement* placey = new TiXmlElement("y");
+		
+		char x[5], y[5];
+		_itoa_s(w.getStroke()[i].getBegin().x, x, 5);
+		_itoa_s(w.getStroke()[i].getBegin().y, y, 5);
+
+		placex->LinkEndChild(new TiXmlText(x));
+		placey->LinkEndChild(new TiXmlText(y));
+		
+		strokebeginplace->LinkEndChild(placex);
+		strokebeginplace->LinkEndChild(placey);
+
+		strokeplacetag->LinkEndChild(strokebeginplace);
+		//delete strokebeginplace;
+	}
+
+	pRootNode->LinkEndChild(strokeplacetag);
+
+	TiXmlElement *pAdd = new TiXmlElement("Add");
+	if(!pAdd)
+	{
+		return ;
+	}
+	pRootNode->LinkEndChild(pAdd);
+
+	TiXmlText *pNameValue = new TiXmlText("STM100");
+	//pName->LinkEndChild(pNameValue);
+	TiXmlText * pAddValue = new TiXmlText("0001");
+	pAdd->LinkEndChild(pAddValue);
+
+	pDoc->SaveFile("Word.xml");
+
+	return ;
 }

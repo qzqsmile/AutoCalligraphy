@@ -12,6 +12,7 @@ class Word
 	private:
 		int strokecount;
 		vector<int> order;
+		vector<vector<int>> beginplace;
 		vector<stroke> strokes;
 		vector<point> points;
 	public:
