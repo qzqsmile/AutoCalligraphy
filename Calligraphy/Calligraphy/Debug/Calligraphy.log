@@ -1,2 +1,14 @@
-﻿  generatexml.cpp
+﻿  stroke.cpp
+d:\stroke\calligraphy\calligraphy\stroke.cpp(897): warning C4018: '>' : signed/unsigned mismatch
+d:\stroke\calligraphy\calligraphy\stroke.cpp(897): warning C4018: '<' : signed/unsigned mismatch
+d:\stroke\calligraphy\calligraphy\stroke.cpp(1273): warning C4018: '>=' : signed/unsigned mismatch
+d:\stroke\calligraphy\calligraphy\stroke.cpp(1273): warning C4018: '<=' : signed/unsigned mismatch
+d:\stroke\calligraphy\calligraphy\stroke.cpp(1462): warning C4018: '<' : signed/unsigned mismatch
+  Calligraphy.cpp
+d:\stroke\calligraphy\calligraphy\calligraphy.cpp(170): warning C4018: '<' : signed/unsigned mismatch
+  Generating Code...
+  Compiling...
+  word.cpp
+  generatexml.cpp
+  Generating Code...
   Calligraphy.vcxproj -> D:\Stroke\Calligraphy\Debug\Calligraphy.exe

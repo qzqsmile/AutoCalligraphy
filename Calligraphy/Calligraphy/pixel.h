@@ -11,5 +11,8 @@ using namespace cv;
 void SetPixel(IplImage *img, const CvPoint *p);
 bool IsWhite(const IplImage *img, const CvPoint *p);
 uchar GetPixel(const IplImage *img, const CvPoint* p);
-
+void SetPixelOnPic(Mat& pic, vector<CvPoint> points);
+void DrawLineOnMat(Mat& pic, CvPoint p);
+void DrawVerticalOnMat(Mat& pic, CvPoint p);
+	
 #endif

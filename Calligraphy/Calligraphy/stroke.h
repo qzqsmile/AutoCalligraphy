@@ -25,6 +25,7 @@ class stroke
 		int length;
 		vector<CvPoint> outline;
 		vector<CvPoint> midline;
+		vector<int> width;
 	public:
 		stroke();
 		virtual ~stroke(){};
@@ -37,7 +38,8 @@ class stroke
 		void storeAngle(float a);
 		void storeLength(int len);
 		void storeType(enum TYPE t);
-		
+		void stroeWidth(const vector<int>& w);
+
 		//»ñÈ¡º¯Êý
 		CvPoint getBegin() const;
 		CvPoint getEnd() const;
@@ -60,5 +62,11 @@ void DrawPieMiddle(vector<CvPoint>&strokeoutline, const IplImage *img, IplImage 
 void DrawNaMiddle(vector<CvPoint>&strokeoutline, const IplImage *img, IplImage *outimg, vector<CvPoint>& shustroke, stroke& s);
 void DrawLine(const CvPoint&s, IplImage *out_img);
 int findneareastpoint(const int x, const int y, const vector<CvPoint>& stroke);
+void storestrokes(Mat &pic, vector<vector<CvPoint> >& p);
+int calfreedom(int i, int j, const Mat& pic);
+void dfs(Mat& pic, int i, int j, vector<CvPoint>& stroke);
+void cutstroke(Mat& pic, vector<vector<CvPoint> >& strokes, const vector<CvPoint>& crosspoint);
+void calWidth(const Mat & pic, const stroke& s, vector<int>& width);
+void calType(const stroke& s, TYPE& t);
 
 #endif

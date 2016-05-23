@@ -87,6 +87,7 @@
     <ClCompile Include="pixel.cpp" />
     <ClCompile Include="point.cpp" />
     <ClCompile Include="stroke.cpp" />
+    <ClCompile Include="thin.cpp" />
     <ClCompile Include="tinystr.cpp" />
     <ClCompile Include="tinyxml.cpp" />
     <ClCompile Include="tinyxmlerror.cpp" />
@@ -100,6 +101,7 @@
     <ClInclude Include="pixel.h" />
     <ClInclude Include="point.h" />
     <ClInclude Include="stroke.h" />
+    <ClInclude Include="thin.h" />
     <ClInclude Include="tinystr.h" />
     <ClInclude Include="tinyxml.h" />
     <ClInclude Include="word.h" />

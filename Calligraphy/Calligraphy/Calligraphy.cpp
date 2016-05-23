@@ -7,6 +7,7 @@
 #include"stroke.h"
 #include"word.h"
 #include"pixel.h"
+#include"thin.h"
 #include"generatexml.h"
 
 using namespace cv;
@@ -16,6 +17,26 @@ uchar GetPixel(const IplImage *img, const CvPoint* p);
 bool IsHeng(const vector<CvPoint>& strokepoint, const IplImage * img);
 void SetPixel(IplImage *img, const CvPoint *p);
 //void DrawHengMiddle(vector<CvPoint> &stroke,const IplImage *img, IplImage * outimg, vector<CvPoint>& hengstroke);
+
+void imagereverse(IplImage *img1)
+{
+	for(int i = 0; i < img1->width; i++)
+	{
+		for(int j = 0; j < img1->height; j++)
+		{
+			/*img1[j*(img1->widthStep)+i] = 255 - img1[j * (img1->widthStep) + i];
+				uchar *ptr = (uchar *)img->imageData + ((p->y) * (img->widthStep));
+
+				return ptr[p->x];*/
+
+			uchar *p = (uchar *) img1->imageData + j * (img1->widthStep);
+			CvPoint p1;
+			p1.x = i;
+			p1.y = j;
+			p[i] = 255 - GetPixel(img1, &p1);
+		}
+	}
+}
 
 
 void rotateImage(IplImage* img, IplImage *img_rotate,int degree)  
@@ -32,21 +53,144 @@ void rotateImage(IplImage* img, IplImage *img_rotate,int degree)
     cvWarpAffine(img,img_rotate, &M,CV_INTER_LINEAR+CV_WARP_FILL_OUTLIERS,cvScalarAll(0) );  
 }  
 
+
 int main( int argc, char** argv)  
 {     
-	const char* imagename = "..\\Res\\5.jpg";
+	const char* imagename = "..\\Res\\lin_zuo.jpg";
+	const char* imagename1 = "..\\Res\\lin_zuo.jpg";
 
+	/* Mat image;
+	 Mat gray_image;
+	 Mat bin_image;
+	 Mat dst;
+	image = imread(imagename, CV_LOAD_IMAGE_COLOR);
+	cvtColor( image, gray_image, CV_BGR2GRAY );
+	threshold(gray_image, bin_image, 100,255, CV_THRESH_BINARY);
 
+	namedWindow( imagename, CV_WINDOW_AUTOSIZE );
+	namedWindow( "Gray image", CV_WINDOW_AUTOSIZE );
+	bitwise_not(bin_image, bin_image);
+
+	cvThin(bin_image, dst, 1000);
+
+	imshow("结果",dst);
+	imshow( imagename, image );
+	imshow( "Gray image", gray_image);
+
+	waitKey(0);
+
+	return 0;*/
 	//从文件中读入图像
 	IplImage *img = cvLoadImage(imagename,CV_LOAD_IMAGE_UNCHANGED);
+	IplImage *img1 = cvLoadImage(imagename1,CV_LOAD_IMAGE_UNCHANGED);
+
+	IplImage * im_median_filter = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
+
 	IplImage *gray_img = cvCreateImage(cvGetSize(img),IPL_DEPTH_8U, 1);
+	IplImage *gray_img1 = cvCreateImage(cvGetSize(img1),IPL_DEPTH_8U, 1);
+
+
 	cvCvtColor(img, gray_img, CV_BGR2GRAY);
+	cvCvtColor(img1, gray_img1, CV_BGR2GRAY);
+
+	//滤波
+	cvSmooth(gray_img, im_median_filter,CV_BLUR,5,5);
 	//二值化图
 	IplImage *bin_img = cvCreateImage(cvGetSize(gray_img), IPL_DEPTH_8U, 1);
+	IplImage *bin_img1 = cvCreateImage(cvGetSize(gray_img1), IPL_DEPTH_8U, 1);
 	cvThreshold(gray_img, bin_img, 100, 255, CV_THRESH_BINARY);
+	cvThreshold(gray_img1, bin_img1, 100, 255, CV_THRESH_BINARY);
 	//复制一份留作轮廓处理
 	IplImage *bin_copy_image = cvCloneImage(bin_img);
+	IplImage *bin_copy_image1 = cvCloneImage(bin_img1);
 	IplImage *rotateimage = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
+	//IplImage *clone = cvCreateImage(cvGetSize(bin_img), IPL_DEPTH_8U, 1);
+
+
+
+	waitKey(0);
+
+	Mat calwidth(bin_img);
+	imagereverse(bin_img);
+	imagereverse(bin_img1);
+
+	IplImage *clone = cvCloneImage(bin_img);
+	Mat wordoutline1;
+	Mat wordoutline2;
+	Mat src(bin_img, true);
+	Mat src1(bin_img1, true);
+	
+
+	//bitwise_not(src, clone1);
+
+	cvThin(src, wordoutline1,100);
+	cvThin(src1, wordoutline2,100);
+	//thin(bin_img, clone, 100);
+	bitwise_not(wordoutline1, wordoutline1);
+	bitwise_not(wordoutline2, wordoutline2);
+
+	Mat wordoutlineclone;
+	wordoutline1.copyTo(wordoutlineclone);
+	vector<vector<CvPoint> > wordstrokes;
+	vector<vector<CvPoint> > strokesbones;
+	vector<CvPoint> crosspoint;
+
+	storestrokes(wordoutlineclone, strokesbones);
+	crosspoint.push_back(strokesbones[0][150]);
+	crosspoint.push_back(strokesbones[0][450]);
+	crosspoint.push_back(strokesbones[1][129]);
+	crosspoint.push_back(strokesbones[1][217]);
+	//DrawLineOnMat(wordoutline1, strokesbones[0][160]);
+	wordoutline1.copyTo(wordoutlineclone);
+	//DrawVerticalOnMat(wordoutline1, strokesbones[0][156]);
+
+	wordoutline1.copyTo(wordoutlineclone);
+	vector<vector<CvPoint> >strokesclone;
+	cutstroke(wordoutlineclone,strokesclone, crosspoint);
+	//DrawLineOnMat(wordoutline1, strokesbones[2][100]);
+
+	wordstrokes.push_back(strokesclone[1]);
+	wordstrokes.push_back(strokesclone[3]);
+	wordstrokes.push_back(strokesclone[4]);
+	wordstrokes.push_back(strokesclone[5]);
+
+	crosspoint.clear();
+	strokesclone.clear();
+
+	wordoutline1.copyTo(wordoutlineclone);
+	crosspoint.push_back(strokesbones[0][156]);
+	crosspoint.push_back(strokesbones[0][353]);
+	cutstroke(wordoutlineclone, strokesclone, crosspoint);
+
+	//DrawLineOnMat(wordoutline1, strokesbones[0][300]);
+	wordstrokes.push_back(strokesclone[0]);
+	//DrawVerticalOnMat(wordoutline1, strokesclone[4][10]);
+	//存储笔画和计算宽度
+	vector<stroke> stk;
+	for(int i =0;  i < wordstrokes.size(); i++)
+	{
+		stroke s;
+		s.storeMidLine(wordstrokes[i]);
+		vector<int> width;
+		//计算宽度
+		calWidth(calwidth,s,width);
+		s.stroeWidth(width);
+		TYPE t;
+		calType(s, t);
+		stk.push_back(s);
+	}
+
+	namedWindow("轮廓");
+	imshow("轮廓", wordoutline1);
+	waitKey();
+
+	//cvNamedWindow("二值化图", CV_WINDOW_AUTOSIZE);
+	//cvShowImage("二值化图", bin_img);
+	
+	//cvWaitKey(0);
+
+	//cvReleaseImage(&clone);32
+	//cvDestroyWindow("二值化图");
 
 	//rotateImage(img, rotateimage, 30);
 
@@ -76,16 +220,42 @@ int main( int argc, char** argv)
 	}*/
 	//检测轮廓并返回轮廓个数
 	CvMemStorage *pcvMstorage = cvCreateMemStorage();
+	CvMemStorage *MemCompare1 = cvCreateMemStorage();
+	CvMemStorage *MemCompare2 = cvCreateMemStorage();
 	CvSeq *pcvSeq = NULL;
+	CvSeq *compare1 = NULL;
+	CvSeq *compare2 = NULL;
+
+
 	//这里会修改二值化图像
 	cvFindContours(bin_copy_image, pcvMstorage, &pcvSeq, sizeof(CvContour), CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE, cvPoint(0, 0)); 
+	cvFindContours(bin_copy_image, MemCompare1, &compare1, sizeof(CvContour),CV_RETR_TREE);  
+	cvFindContours(bin_copy_image1, MemCompare2, &compare2, sizeof(CvContour),CV_RETR_TREE);  
 	//画轮廓图
 	IplImage *pOutlineImage = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
 	int nlevels = 3;
 	cvRectangle(pOutlineImage, cvPoint(0, 0), cvPoint(pOutlineImage->width, pOutlineImage->height), CV_RGB(255, 255, 255), CV_FILLED);  
 	IplImage *waterdrop = cvCloneImage(pOutlineImage);
+
 	cvDrawContours(pOutlineImage, pcvSeq, CV_RGB(255,0,0), CV_RGB(0,255,0), nlevels, 1);
 	
+	Mat pOut(pOutlineImage, true);
+	DrawRedMidLine(wordoutline1, pOutlineImage);
+	DrawBlueMidLine(wordoutline2, pOutlineImage);
+	
+	double compareres = cvMatchShapes(compare1, compare2, CV_RETR_TREE);
+	
+	//namedWindow("c");
+	//imshow("c", pOut);
+	//waitKey();
+
+	cvNamedWindow("二值化图", CV_WINDOW_AUTOSIZE);
+	cvShowImage("二值化图", pOutlineImage);
+	
+	cvWaitKey(0);
+
+	return 0;
+
 	//goto lunkuo;
 	//获取轮廓的像素坐标
 	CvPoint *pPoint = NULL;

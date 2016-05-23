@@ -50,6 +50,11 @@ void stroke::storeType(enum TYPE t)
 	type = t;
 }
 
+void stroke::stroeWidth(const vector<int> & w)
+{
+	width = w;
+}
+
 //»ñÈ¡º¯Êý
 CvPoint stroke::getBegin() const
 {
@@ -1314,4 +1319,160 @@ bool IsGou(const vector<CvPoint>&stroke, const IplImage* img)
 		}
 		return false;
 	}
+}
+
+
+void storestrokes(Mat &pic, vector<vector<CvPoint> >& p)
+{
+	for(int i = 0; i < pic.rows; i++)
+	{
+		for(int j = 0; j < pic.cols; j++)
+		{
+			if(pic.at<uchar>(i, j) == 0)
+			{
+				vector<CvPoint> stroke;
+				dfs(pic, i, j, stroke);
+				p.push_back(stroke);
+			}
+		}
+	}
+}
+
+void dfs(Mat& pic, int i, int j, vector<CvPoint>& stroke)
+{
+	CvPoint p;
+	p.x = i;
+	p.y = j;
+	stroke.push_back(p);
+	pic.at<uchar>(i, j) = 255;
+
+	if(pic.at<uchar>(i-1, j-1) == 0)
+		dfs(pic, i-1, j-1, stroke);
+	if(pic.at<uchar>(i-1, j) == 0)
+		dfs(pic, i-1, j, stroke);
+	if(pic.at<uchar>(i-1,j+1) == 0)
+		dfs(pic, i-1, j+1, stroke);
+	if(pic.at<uchar>(i,j-1) == 0)
+		dfs(pic, i, j-1, stroke);
+	if(pic.at<uchar>(i,j+1) == 0)
+		dfs(pic,i, j+1, stroke);
+	if(pic.at<uchar>(i+1, j-1) == 0)
+		dfs(pic, i+1, j-1, stroke);
+	if(pic.at<uchar>(i+1, j) == 0)
+		dfs(pic, i+1, j, stroke);
+	if(pic.at<uchar>(i+1,j+1) == 0)
+		dfs(pic, i+1, j+1, stroke);
+}
+
+int calfreedom(int i, int j, const Mat& pic)
+{
+	int freecount = 0;
+	if(pic.at<uchar>(i-1, j-1) == 0)
+		freecount++;
+	if(pic.at<uchar>(i-1, j) == 0)
+		freecount++;
+	if(pic.at<uchar>(i-1, j+1) == 0)
+		freecount++;
+	if(pic.at<uchar>(i, j-1) == 0)
+		freecount++;
+	if(pic.at<uchar>(i, j+1) == 0)
+		freecount++;
+	if(pic.at<uchar>(i+1, j-1) == 0)
+		freecount++;
+	if(pic.at<uchar>(i+1, j) == 0)
+		freecount++;
+	if(pic.at<uchar>(i+1, j+1) == 0)
+		freecount++;
+	return freecount;
+}
+
+void cutstroke(Mat& pic, vector<vector<CvPoint> >& strokes, const vector<CvPoint>& crosspoint)
+{
+	SetPixelOnPic(pic, crosspoint);
+	storestrokes(pic, strokes);
+}
+
+void calWidth(const Mat & pic, const stroke& s, vector<int>& width)
+{
+	if(s.getType() == HENG)
+	{
+		vector<CvPoint> midline = s.getMidLine(); 
+	
+		for(unsigned int i = 0; i < midline.size(); i++)
+		{
+			int up = 0 , down = 0;
+
+			for(int j = midline[i].y; j > 0; j--)
+			{
+				if(pic.at<uchar>(midline[i].x, j) == 255)
+				{
+					up = j;
+					break;
+				}
+			}
+
+			for(int j = midline[i].y; j < pic.rows; j++)
+			{
+				if(pic.at<uchar>(midline[i].x, j) == 255)
+				{
+					down = j;
+					break;
+				}
+			}
+			width.push_back(up-down);
+		}
+	}
+	else
+	{
+		vector<CvPoint> midline = s.getMidLine();
+
+		for(unsigned int i = 0; i < midline.size(); i++)
+		{
+			int left = 0 , right = 0;
+
+			for(int j = midline[i].x; j > 0; j--)
+			{
+				if(pic.at<uchar>(j, midline[i].y) == 255)
+				{
+					left = j;
+					break;
+				}
+			}
+
+			for(int j = midline[i].x; j < pic.cols; j++)
+			{
+				if(pic.at<uchar>(j, midline[i].y) == 255)
+				{
+					right = j;
+					break;
+				}
+			}
+			width.push_back(left-right);
+		}
+	}
+}
+
+void calType(const stroke& s, TYPE& t)
+{
+	vector<CvPoint> mid = s.getMidLine();
+	int x, y;
+	x = y = 0;
+	double res = 0;
+
+	for(int i = 1; i < mid.size(); i++)
+	{
+		x += mid[i].x-mid[i-1].x;
+		y += mid[i].y-mid[i-1].y;
+	}
+
+	res = (double) x / y;
+
+	if(fabs(res) < 0.2)
+		t = SHU;
+	else if(fabs(res) > 4)
+		t = HENG;
+	else if((res > 0.7) && (res < 1.3))
+		t = PIE;
+	else
+		t = NA;
 }
