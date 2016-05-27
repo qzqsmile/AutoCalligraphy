@@ -110,7 +110,7 @@ int main( int argc, char** argv)
 
 	waitKey(0);
 
-	Mat calwidth(bin_img);
+	Mat calwidth(bin_img, true);
 	imagereverse(bin_img);
 	imagereverse(bin_img1);
 
@@ -134,6 +134,7 @@ int main( int argc, char** argv)
 	vector<vector<CvPoint> > wordstrokes;
 	vector<vector<CvPoint> > strokesbones;
 	vector<CvPoint> crosspoint;
+	Word word1;
 
 	storestrokes(wordoutlineclone, strokesbones);
 	crosspoint.push_back(strokesbones[0][150]);
@@ -154,6 +155,9 @@ int main( int argc, char** argv)
 	wordstrokes.push_back(strokesclone[4]);
 	wordstrokes.push_back(strokesclone[5]);
 
+	crosspoint.erase(crosspoint.begin());
+	word1.storeCrosspoints(crosspoint);
+
 	crosspoint.clear();
 	strokesclone.clear();
 
@@ -164,24 +168,30 @@ int main( int argc, char** argv)
 
 	//DrawLineOnMat(wordoutline1, strokesbones[0][300]);
 	wordstrokes.push_back(strokesclone[0]);
+	//DrawLineOnMat(wordoutline1, wordstrokes[2][2]);
 	//DrawVerticalOnMat(wordoutline1, strokesclone[4][10]);
 	//存储笔画和计算宽度
 	vector<stroke> stk;
-	for(int i =0;  i < wordstrokes.size(); i++)
+	for(unsigned int i =0;  i < wordstrokes.size(); i++)
 	{
 		stroke s;
 		s.storeMidLine(wordstrokes[i]);
-		vector<int> width;
-		//计算宽度
-		calWidth(calwidth,s,width);
-		s.stroeWidth(width);
 		TYPE t;
 		calType(s, t);
+		vector<int> width;
+		sortstroke(s);
+		//计算宽度
+		calWidth(calwidth,s,width);
+		s.storeWidth(width);
 		stk.push_back(s);
 	}
 
+	word1.storeStroke(stk);
+	
+	generatexml(word1);
+
 	namedWindow("轮廓");
-	imshow("轮廓", wordoutline1);
+	imshow("轮廓", calwidth);
 	waitKey();
 
 	//cvNamedWindow("二值化图", CV_WINDOW_AUTOSIZE);
@@ -374,7 +384,7 @@ int main( int argc, char** argv)
 						cout <<"is heng"<<endl;
 						DrawHengMiddle(strokepoint, bin_img, pOutlineImage, hengstroke, s);
 						//break;
-						w.storeStroke(s);
+						//w.storeStroke(s);
 					}
 
 					float ang = 0;
@@ -385,7 +395,7 @@ int main( int argc, char** argv)
 						//DrawOutLine(strokepoint, img);
 						DrawShuMiddle(strokepoint, bin_img, pOutlineImage, shustroke, s);
 						cout <<"is shu" <<endl;
-						w.storeStroke(s);
+						//w.storeStroke(s);
 					
 					}
 				/*	drawLine(strokepoint[10], pOutlineImage);
@@ -401,7 +411,7 @@ int main( int argc, char** argv)
 						//DrawLine(strokepoint[20], pOutlineImage);
 						cout << "is pie" << endl;
 						DrawPieMiddle(strokepoint, bin_img, pOutlineImage,piestroke, ang, s);
-						w.storeStroke(s);
+						//w.storeStroke(s);
 					}
 				
 					if(IsNa(strokepoint, bin_img))
@@ -411,7 +421,7 @@ int main( int argc, char** argv)
 						cout << "Is Na" << endl;
 						DrawNaMiddle(strokepoint, bin_img, pOutlineImage, nastroke, s);
 						//DrawLine(strokepoint[0],pOutlineImage);
-						w.storeStroke(s);
+						//w.storeStroke(s);
 					}
 					//break;
 
@@ -438,7 +448,7 @@ int main( int argc, char** argv)
 	}
 
 	vector<CvPoint> res;
-	generatexml(w, res);
+	//generatexml(w, res);
 
 	//assert(count != 2);
 	CvPoint p;

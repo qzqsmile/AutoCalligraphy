@@ -3,6 +3,6 @@
 
 #include"word.h"
 
-void generatexml(Word s, vector<CvPoint>& res);
+void generatexml(Word s);
 
 #endif

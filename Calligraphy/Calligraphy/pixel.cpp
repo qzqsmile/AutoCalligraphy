@@ -37,9 +37,9 @@ uchar GetPixel(const IplImage *img, const CvPoint* p)
 
 void SetPixelOnPic(Mat& pic, vector<CvPoint> points)
 {
-	for(int i = 0; i < points.size(); i++)
+	for(unsigned int i = 0; i < points.size(); i++)
 	{
-		pic.at<uchar>(points[i].x, points[i].y) = 255;
+		pic.at<uchar>(points[i].y, points[i].x) = 255;
 	}
 }
 
@@ -48,7 +48,7 @@ void DrawLineOnMat(Mat& pic, CvPoint p)
 {
 	for(int i = p.y; i < pic.cols; i++)
 	{
-		pic.at<uchar>(p.x, i) = 0;
+		pic.at<uchar>(p.y, i) = 0;
 	}
 }
 
@@ -56,6 +56,6 @@ void DrawVerticalOnMat(Mat& pic, CvPoint p)
 {
 	for(int i = p.x; i < pic.rows; i++)
 	{
-		pic.at<uchar>(i, p.y) = 0;
+		pic.at<uchar>(i, p.x) = 0;
 	}
 }

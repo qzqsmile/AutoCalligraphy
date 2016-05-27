@@ -38,6 +38,12 @@ void point::storeOutLine(const vector<CvPoint>& s)
 	outline = s;
 }
 
+void point::convertPic(float ratio)
+{
+	longlength = (int)(longlength * ratio);
+	shortlength = (int)(shortlength * ratio);
+}
+
 point::point():longlength(0), shortlength(0), area(0.0)
 {
 	longbegin.x = longbegin.y = 0;
@@ -75,9 +81,9 @@ void DrawWaterDrop(IplImage *img, int a, int b)
 
 	while(i < 8.0)
 	{
-		i = i+0.1;
-		nextpoint.x = (int) a * (1 - sin(i)) * cos(i) + x0;
-		nextpoint.y = (int) b * (sin(i) - 1);
+		i = (float)(i+0.1);
+		nextpoint.x = (int) (a * (1 - sin(i)) * cos(i) + x0);
+		nextpoint.y = (int) (b * (sin(i) - 1));
 		if(prepoint.x == -1)
 			prepoint = nextpoint;
 		cvLine(img, prepoint, nextpoint, CV_RGB(0,0,255),1,0);

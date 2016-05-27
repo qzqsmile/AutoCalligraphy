@@ -28,6 +28,7 @@ class point
 		void storeLongLine(const CvPoint &begin, const CvPoint& end);
 		void storeShortLine(const CvPoint &begin, const CvPoint & end);
 		void storeOutLine(const vector<CvPoint>& s);
+		void convertPic(float ratio);
 		CvPoint getLongLineBegin() const;
 		CvPoint getLongLineEnd() const;
 		CvPoint getShortLineBegin() const;

@@ -38,11 +38,13 @@ class stroke
 		void storeAngle(float a);
 		void storeLength(int len);
 		void storeType(enum TYPE t);
-		void stroeWidth(const vector<int>& w);
+		void storeWidth(const vector<int>& w);
+		void convertPic(float ratio);
 
 		//»ñÈ¡º¯Êý
-		CvPoint getBegin() const;
-		CvPoint getEnd() const;
+		vector<int> getWidth();
+		CvPoint getBegin();
+		CvPoint getEnd();
 		vector<CvPoint> getOutLine() const;
 		vector<CvPoint> getMidLine() const;
 		float getAngle() const;
@@ -67,6 +69,8 @@ int calfreedom(int i, int j, const Mat& pic);
 void dfs(Mat& pic, int i, int j, vector<CvPoint>& stroke);
 void cutstroke(Mat& pic, vector<vector<CvPoint> >& strokes, const vector<CvPoint>& crosspoint);
 void calWidth(const Mat & pic, const stroke& s, vector<int>& width);
-void calType(const stroke& s, TYPE& t);
+void calType(stroke& s, TYPE& t);
+bool strokecmp(CvPoint s1, CvPoint s2);
+void sortstroke(stroke &s);
 
 #endif

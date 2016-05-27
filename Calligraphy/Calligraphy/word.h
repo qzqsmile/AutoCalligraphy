@@ -14,14 +14,24 @@ class Word
 		vector<int> order;
 		vector<vector<int>> beginplace;
 		vector<stroke> strokes;
+		vector<CvPoint> places;
+		vector<CvPoint> crosspoints;
 		vector<point> points;
 	public:
 		Word() {};
 		virtual ~Word() {};
 		void storePoint(const point & p);
-		void storeStroke(const stroke& s);
+		void storeStroke(const vector<stroke>& s);
+		void stroksPoints(const vector<point>& p);
+		void storeStrokeNum(int count);
+		void storeCrosspoints(vector<CvPoint> points);
+		void storeStrokePlace();
+		vector<CvPoint> getStrokePlace();
+		int getStrokeNum();
 		vector<stroke> getStroke();
+		vector<CvPoint> getStrokeCrossPoints();
+		vector<point> getPoints();
+		void convertPic(float ratio);
 };
-
 
 #endif
