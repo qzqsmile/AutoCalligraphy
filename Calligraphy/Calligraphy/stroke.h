@@ -39,7 +39,7 @@ class stroke
 		void storeLength(int len);
 		void storeType(enum TYPE t);
 		void storeWidth(const vector<int>& w);
-		void convertPic(float ratio);
+		void convertPic(float ratio, CvPoint beginpic);
 
 		//»ñÈ¡º¯Êý
 		vector<int> getWidth();

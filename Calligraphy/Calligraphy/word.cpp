@@ -46,7 +46,7 @@ vector<point> Word::getPoints()
 	return points;
 }
 
-void Word::convertPic(float ratio)
+void Word::convertPic(float ratio, CvPoint beginpic)
 {
 	for(unsigned int i = 0; i < beginplace.size(); i++)
 	{
@@ -58,12 +58,16 @@ void Word::convertPic(float ratio)
 
 	for(unsigned int i = 0; i < crosspoints.size(); i++)
 	{
+		crosspoints[i].x = crosspoints[i].x - beginpic.x;
+		crosspoints[i].y = crosspoints[i].y - beginpic.y;
 		crosspoints[i].x = (int)(crosspoints[i].x * ratio);
 		crosspoints[i].y = (int)(crosspoints[i].y * ratio);
 	}
 
 	for(unsigned int i = 0; i < places.size(); i++)
 	{
+		places[i].x = (int)(places[i].x - beginpic.x);
+		places[i].y = (int)(places[i].y - beginpic.y);
 		places[i].x = (int)(places[i].x * ratio);
 		places[i].y = (int)(places[i].y * ratio);
 	}

@@ -31,7 +31,7 @@ class Word
 		vector<stroke> getStroke();
 		vector<CvPoint> getStrokeCrossPoints();
 		vector<point> getPoints();
-		void convertPic(float ratio);
+		void convertPic(float ratio, CvPoint beginpic);
 };
 
 #endif

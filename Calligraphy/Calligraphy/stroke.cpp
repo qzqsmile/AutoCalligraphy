@@ -100,14 +100,19 @@ vector<int> stroke::getWidth()
 	return width;
 }
 
-void stroke::convertPic(float ratio)
+void stroke::convertPic(float ratio, CvPoint beginpic)
 {
 	for(unsigned int i = 0; i < midline.size(); i++)
 	{
-		midline[i].x = (int)(midline[i].x * ratio);
+		midline[i].x = midline[i].x - beginpic.x;
+		midline[i].y = midline[i].y - beginpic.y;
+ 		midline[i].x = (int)(midline[i].x * ratio);
 		midline[i].y = (int)(midline[i].y * ratio);
 	}
-
+	begin.x = begin.x - beginpic.x;
+	begin.y = begin.y - beginpic.y;
+	end.x = end.x - beginpic.x;
+	end.y = end.y - beginpic.y;
 	begin.x = (int)(begin.x * ratio);
 	begin.y = (int)(begin.y * ratio);
 	end.x = (int)(end.x * ratio);
