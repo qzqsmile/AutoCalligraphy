@@ -175,9 +175,9 @@ void DrawRedMidLine(Mat src, IplImage* dst)
 			if(src.at<uchar>(i, j ) == 0)
 			{
 				CvScalar cs = cvGet2D(dst, i, j);
-				cs.val[0] = 0;
+				cs.val[0] = 255;
 				cs.val[1] = 0;
-				cs.val[2] = 255;
+				cs.val[2] = 0;
 				cvSet2D(dst, i, j, cs);
 			}
 		}

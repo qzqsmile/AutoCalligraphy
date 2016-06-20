@@ -56,8 +56,8 @@ void rotateImage(IplImage* img, IplImage *img_rotate,int degree)
 
 int main( int argc, char** argv)  
 {     
-	const char* imagename = "..\\Res\\lin_zuo.jpg";
-	const char* imagename1 = "..\\Res\\lin_zuo.jpg";
+	const char* imagename = "C:\\Users\\Q\\Google 云端硬盘\\工作汇报\\论文材料\\图片\\dian1.jpg";
+	const char* imagename1 = "..\\Res\\4.jpg";
 
 	/* Mat image;
 	 Mat gray_image;
@@ -106,8 +106,6 @@ int main( int argc, char** argv)
 	IplImage *rotateimage = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
 	//IplImage *clone = cvCreateImage(cvGetSize(bin_img), IPL_DEPTH_8U, 1);
 
-
-
 	waitKey(0);
 
 	Mat calwidth(bin_img, true);
@@ -120,7 +118,6 @@ int main( int argc, char** argv)
 	Mat src(bin_img, true);
 	Mat src1(bin_img1, true);
 	
-
 	//bitwise_not(src, clone1);
 
 	cvThin(src, wordoutline1,100);
@@ -129,7 +126,13 @@ int main( int argc, char** argv)
 	bitwise_not(wordoutline1, wordoutline1);
 	bitwise_not(wordoutline2, wordoutline2);
 
-	Mat wordoutlineclone;
+	namedWindow("轮廓");
+	imshow("轮廓", wordoutline1);
+	waitKey();
+
+//	return 0;
+
+/*	Mat wordoutlineclone;
 	wordoutline1.copyTo(wordoutlineclone);
 	vector<vector<CvPoint> > wordstrokes;
 	vector<vector<CvPoint> > strokesbones;
@@ -192,8 +195,8 @@ int main( int argc, char** argv)
 
 	namedWindow("轮廓");
 	imshow("轮廓", calwidth);
-	waitKey();
-
+	waitKey();*/
+	
 	//cvNamedWindow("二值化图", CV_WINDOW_AUTOSIZE);
 	//cvShowImage("二值化图", bin_img);
 	
@@ -247,11 +250,11 @@ int main( int argc, char** argv)
 	cvRectangle(pOutlineImage, cvPoint(0, 0), cvPoint(pOutlineImage->width, pOutlineImage->height), CV_RGB(255, 255, 255), CV_FILLED);  
 	IplImage *waterdrop = cvCloneImage(pOutlineImage);
 
-	cvDrawContours(pOutlineImage, pcvSeq, CV_RGB(255,0,0), CV_RGB(0,255,0), nlevels, 1);
+	cvDrawContours(pOutlineImage, pcvSeq, CV_RGB(0,255,0), CV_RGB(0,255,0), nlevels, 1);
 	
 	Mat pOut(pOutlineImage, true);
 	DrawRedMidLine(wordoutline1, pOutlineImage);
-	DrawBlueMidLine(wordoutline2, pOutlineImage);
+	//DrawBlueMidLine(wordoutline2, pOutlineImage);
 	
 	double compareres = cvMatchShapes(compare1, compare2, CV_RETR_TREE);
 	
